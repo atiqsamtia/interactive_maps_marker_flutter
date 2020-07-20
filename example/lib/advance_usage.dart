@@ -8,11 +8,12 @@ class AdvancedUsage extends StatelessWidget {
       appBar: AppBar(
         title: Text('Advanced Usage'),
       ),
-//      body: InteractiveMapsMarker(),
+      body: Center(
+        child: Text('Coming Soon'),
+      ),
     );
   }
 }
-
 
 class StoreItem implements MarkerItem {
   @override
@@ -31,4 +32,3 @@ class StoreItem implements MarkerItem {
 
   StoreItem({this.id, this.latitude, this.longitude, this.title, this.subTitle, this.details});
 }
-
