@@ -71,6 +71,13 @@ Distributed under the MIT license.
 
 [https://github.com/atiqsamtia/interactive_maps_marker_flutter](https://github.com/atiqsamtia/interactive_maps_marker_flutter)
 
+## Credits
+Inspired by amazing work from [Mohamed Douzane](https://github.com/moho12n)
+
+[Github Repo](https://github.com/moho12n/animateMarkersInFlutter)
+
+[Medium Post](https://medium.com/swlh/animating-markers-in-flutter-20483ee5df49)
+
 ## Contributing
 
 1. Fork it (<https://github.com/atiqsamtia/interactive_maps_marker_flutter/fork>)
