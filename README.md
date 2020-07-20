@@ -1,6 +1,7 @@
 # interactive_maps_marker for Flutter
 Easy to use Animated Maps Markers with detail card. Use it for store or any place locator.
 ## Demo
+![](demo/simple-demo.gif)
 
 ## Usage
 Add this package to your `pubspec.yaml` in `dependencies:` section
