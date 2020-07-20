@@ -90,7 +90,7 @@ class _InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
                     itemCount: widget.items.length,
                     controller: pageController,
                     onPageChanged: _pageChanged,
-                    itemBuilder: widget.itemBuilder == null ? widget.itemBuilder : _buildItem,
+                    itemBuilder: widget.itemBuilder != null ? widget.itemBuilder : _buildItem,
                   ),
                 ),
               ),
@@ -139,7 +139,7 @@ class _InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
               ),
             ],
           ),
-          child: widget.itemBuilder(context, i),
+          child: widget.itemContent(context, i),
         ),
       ),
     );

@@ -18,7 +18,7 @@ class SimpleUsage extends StatelessWidget {
       body: InteractiveMapsMarker(
         items: markers,
         center: LatLng(31.4906504, 74.319872),
-        itemBuilder: (context, index) {
+        itemContent: (context, index) {
           MarkerItem item = markers[index];
           return BottomTile(item: item);
         },
