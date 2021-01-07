@@ -28,6 +28,7 @@ class InteractiveMapsMarker extends StatefulWidget {
 
   final IndexedWidgetBuilder itemBuilder;
   final EdgeInsetsGeometry itemPadding;
+  final Alignment contentAlignment;
 
   InteractiveMapsMarker({
     this.items,
@@ -37,6 +38,7 @@ class InteractiveMapsMarker extends StatefulWidget {
     this.itemHeight = 116,
     this.zoom = 12.0,
     this.itemPadding = const EdgeInsets.only(bottom: 80.0),
+    this.contentAlignment = Alignment.bottomCenter,
   });
 
   Uint8List markerIcon;

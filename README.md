@@ -7,7 +7,7 @@ Easy to use Animated Maps Markers with detail card. Use it for store or any plac
 Add this package to your `pubspec.yaml` in `dependencies:` section
 ```yaml
 dependencies: 
-  interactive_maps_marker: ^0.0.1
+  interactive_maps_marker: ^0.0.2
 ```
 This package depends upon ```google_maps_flutter``` so first setup this by following [This Guide](https://pub.dev/packages/google_maps_flutter)
 
@@ -60,6 +60,7 @@ center | ``` LatLng ``` | ``` LatLng(0.0, 0.0) ``` | Center point for initial ma
 zoom | ``` double ``` | 12.0 | Default zoom value for initial map screen.
 itemHeight | ``` double ``` | 116.0 | Height of your detail item. Not applicable when using ``` itemBuilder ```
 itemPadding | ``` EdgeInsetsGeometry ``` | ``` EdgeInsets.only(bottom: 80.0) ``` | Padding for item detail card. Mainly used for bottom padding.
+itemPadding | ``` Alignment ``` | ``` Alignment.bottomCenter ``` | Alignment for content slider.
 itemBuilder | ``` IndexedWidgetBuilder ``` | null | If you don't want default container and want to build the bottom widget yourself, you can use this builder instead of itemContent and have full control over UI. This is builder function which will receive ``` context ``` and ``` index ```. You must return a Widget.
 
 
