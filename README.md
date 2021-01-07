@@ -49,6 +49,9 @@ class ExplorePage extends StatelessWidget {
 ### Advanced Usage
 Coming Soon
 
+### Markers data from a remote server?
+Use this widget inside a stateful widget and update the markers list state with new data. An example can be found in ```stateful_example.dart``` file in example project.
+
 ## Customise with parameters
 You can customise it by passing various parameter values. Details about all parameters is as follows.
 

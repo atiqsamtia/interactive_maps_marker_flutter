@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'advance_usage.dart';
 import 'simple_usage.dart';
+import 'stateful_example.dart';
 
 void main() {
   runApp(MyApp());
@@ -40,6 +41,15 @@ class MyHomePage extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => SimpleUsage()),
+                );
+              },
+            ),
+            RaisedButton(
+              child: Text('Stateful Widget Example'),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => StatefulExample()),
                 );
               },
             ),
