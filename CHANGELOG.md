@@ -1,3 +1,8 @@
+
+## [0.0.3] - (January 08, 2021)
+
+* Alignment bug fix
+
 ## [0.0.2] - (January 08, 2021)
 
 * Update Google Maps dependency

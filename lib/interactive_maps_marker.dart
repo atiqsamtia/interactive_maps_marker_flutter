@@ -83,7 +83,7 @@ class _InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
           children: <Widget>[
             _buildMap(),
             Align(
-              alignment: Alignment.bottomCenter,
+              alignment: widget.contentAlignment,
               child: Padding(
                 padding: widget.itemPadding,
                 child: SizedBox(
