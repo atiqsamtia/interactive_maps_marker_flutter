@@ -14,7 +14,7 @@ class MarkerItem {
   double latitude;
   double longitude;
 
-  MarkerItem({this.id, this.latitude, this.longitude});
+  MarkerItem({required this.id, required this.latitude, required this.longitude});
 }
 
 class InteractiveMapsMarker extends StatefulWidget {
@@ -22,7 +22,7 @@ class InteractiveMapsMarker extends StatefulWidget {
   final double itemHeight;
   final double zoom;
   @required
-  List<MarkerItem> items;
+  final List<MarkerItem> items;
   @required
   final IndexedWidgetBuilder itemContent;
 
@@ -31,18 +31,15 @@ class InteractiveMapsMarker extends StatefulWidget {
   final Alignment contentAlignment;
 
   InteractiveMapsMarker({
-    this.items,
-    this.itemBuilder,
+    required this.items,
+    required this.itemBuilder,
     this.center = const LatLng(0.0, 0.0),
-    this.itemContent,
+    required this.itemContent,
     this.itemHeight = 116,
     this.zoom = 12.0,
     this.itemPadding = const EdgeInsets.only(bottom: 80.0),
     this.contentAlignment = Alignment.bottomCenter,
   });
-
-  Uint8List markerIcon;
-  Uint8List markerIconSelected;
 
   @override
   _InteractiveMapsMarkerState createState() => _InteractiveMapsMarkerState();
@@ -50,12 +47,15 @@ class InteractiveMapsMarker extends StatefulWidget {
 
 class _InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   Completer<GoogleMapController> _controller = Completer();
-  GoogleMapController mapController;
+  late GoogleMapController mapController;
   PageController pageController = PageController(viewportFraction: 0.9);
 
-  Set<Marker> markers;
+  Uint8List? markerIcon;
+  Uint8List? markerIconSelected;
+
+  late Set<Marker> markers;
   int currentIndex = 0;
-  ValueNotifier selectedMarker = ValueNotifier<int>(null);
+  ValueNotifier selectedMarker = ValueNotifier<int?>(null);
 
   @override
   void initState() {
@@ -107,10 +107,21 @@ class _InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
     return Positioned.fill(
       child: ValueListenableBuilder(
         valueListenable: selectedMarker,
-        builder: (context, value, child) {
-          return GoogleMap(
+        builder: (context, dynamic value, child) {
+          return value == null
+          ? GoogleMap(
             zoomControlsEnabled: false,
-            markers: value == null ? null : markers,
+            myLocationEnabled: true,
+            myLocationButtonEnabled: false,
+            onMapCreated: _onMapCreated,
+            initialCameraPosition: CameraPosition(
+              target: widget.center,
+              zoom: widget.zoom,
+            ),
+          )
+          : GoogleMap(
+            zoomControlsEnabled: false,
+            markers: markers,
             myLocationEnabled: true,
             myLocationButtonEnabled: false,
             onMapCreated: _onMapCreated,
@@ -164,10 +175,12 @@ class _InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   }
 
   Future<void> rebuildMarkers(int index) async {
-    int current = widget.items[index].id;
+    int current = widget.items[currentIndex].id;
 
-    if (widget.markerIcon == null) widget.markerIcon = await getBytesFromAsset('packages/interactive_maps_marker/assets/marker.png', 100);
-    if (widget.markerIconSelected == null) widget.markerIconSelected = await getBytesFromAsset('packages/interactive_maps_marker/assets/marker_selected.png', 100);
+    if (markerIcon == null)
+      markerIcon = await getBytesFromAsset('packages/interactive_maps_marker/assets/marker.png', 100);
+    if (markerIconSelected == null)
+      markerIconSelected = await getBytesFromAsset('packages/interactive_maps_marker/assets/marker_selected.png', 100);
 
     Set<Marker> _markers = Set<Marker>();
 
@@ -185,7 +198,9 @@ class _InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
             );
             _pageChanged(tappedIndex);
           },
-          icon: item.id == current ? BitmapDescriptor.fromBytes(widget.markerIconSelected) : BitmapDescriptor.fromBytes(widget.markerIcon),
+          icon: item.id == current
+              ? BitmapDescriptor.fromBytes(markerIconSelected!)
+              : BitmapDescriptor.fromBytes(markerIcon!),
         ),
       );
     });

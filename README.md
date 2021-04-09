@@ -7,8 +7,15 @@ Easy to use Animated Maps Markers with detail card. Use it for store or any plac
 Add this package to your `pubspec.yaml` in `dependencies:` section
 ```yaml
 dependencies: 
-  interactive_maps_marker: ^0.0.2
+  interactive_maps_marker: ^1.0.0
 ```
+
+Not migrated to null safety yet? use old version like this
+```yaml
+dependencies: 
+  interactive_maps_marker: ^0.0.3
+```
+
 This package depends upon ```google_maps_flutter``` so first setup this by following [This Guide](https://pub.dev/packages/google_maps_flutter)
 
 Update dependencies 
