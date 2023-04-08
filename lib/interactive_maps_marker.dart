@@ -14,7 +14,7 @@ class MarkerItem {
   double latitude;
   double longitude;
 
-  MarkerItem({this.id, this.latitude, this.longitude});
+  MarkerItem({required this.id, required this.latitude, required this.longitude});
 }
 
 class InteractiveMapsMarker extends StatefulWidget {
@@ -24,14 +24,14 @@ class InteractiveMapsMarker extends StatefulWidget {
   @required
   List<MarkerItem> items;
   @required
-  final IndexedWidgetBuilder itemContent;
+  final IndexedWidgetBuilder? itemContent;
 
-  final IndexedWidgetBuilder itemBuilder;
+  final IndexedWidgetBuilder? itemBuilder;
   final EdgeInsetsGeometry itemPadding;
   final Alignment contentAlignment;
 
   InteractiveMapsMarker({
-    this.items,
+    required this.items,
     this.itemBuilder,
     this.center = const LatLng(0.0, 0.0),
     this.itemContent,
@@ -39,10 +39,20 @@ class InteractiveMapsMarker extends StatefulWidget {
     this.zoom = 12.0,
     this.itemPadding = const EdgeInsets.only(bottom: 80.0),
     this.contentAlignment = Alignment.bottomCenter,
-  });
+  }){
+    if(itemBuilder == null && itemContent == null){
+      throw Exception('itemBuilder or itemContent must be provided');
+    }
+    readIcons();
+  }
 
-  Uint8List markerIcon;
-  Uint8List markerIconSelected;
+  void readIcons() async {
+    if (markerIcon == null) markerIcon = await getBytesFromAsset('packages/interactive_maps_marker/assets/marker.png', 100);
+    if (markerIconSelected == null) markerIconSelected = await getBytesFromAsset('packages/interactive_maps_marker/assets/marker_selected.png', 100);
+  }
+
+  Uint8List? markerIcon;
+  Uint8List? markerIconSelected;
 
   @override
   _InteractiveMapsMarkerState createState() => _InteractiveMapsMarkerState();
@@ -50,12 +60,12 @@ class InteractiveMapsMarker extends StatefulWidget {
 
 class _InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   Completer<GoogleMapController> _controller = Completer();
-  GoogleMapController mapController;
+  GoogleMapController? mapController;
   PageController pageController = PageController(viewportFraction: 0.9);
 
-  Set<Marker> markers;
+  Set<Marker> markers = {};
   int currentIndex = 0;
-  ValueNotifier selectedMarker = ValueNotifier<int>(null);
+  ValueNotifier selectedMarker = ValueNotifier<int?>(null);
 
   @override
   void initState() {
@@ -92,7 +102,7 @@ class _InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
                     itemCount: widget.items.length,
                     controller: pageController,
                     onPageChanged: _pageChanged,
-                    itemBuilder: widget.itemBuilder != null ? widget.itemBuilder : _buildItem,
+                    itemBuilder: widget.itemBuilder != null ? widget.itemBuilder! : _buildItem,
                   ),
                 ),
               ),
@@ -110,7 +120,7 @@ class _InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
         builder: (context, value, child) {
           return GoogleMap(
             zoomControlsEnabled: false,
-            markers: value == null ? null : markers,
+            markers: value == null ? {} : markers,
             myLocationEnabled: true,
             myLocationButtonEnabled: false,
             onMapCreated: _onMapCreated,
@@ -124,7 +134,7 @@ class _InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
     );
   }
 
-  Widget _buildItem(context, i) {
+  Widget? _buildItem(BuildContext context, int i) {
     return Transform.scale(
       scale: i == currentIndex ? 1 : 0.9,
       child: ClipRRect(
@@ -141,33 +151,34 @@ class _InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
               ),
             ],
           ),
-          child: widget.itemContent(context, i),
+          child: widget.itemContent!(context, i),
         ),
       ),
     );
   }
 
   void _pageChanged(int index) {
-    setState(() => currentIndex = index);
-    Marker marker = markers.elementAt(index);
-    rebuildMarkers(index);
+    try {
+      setState(() => currentIndex = index);
+      Marker marker = markers.elementAt(index);
+      rebuildMarkers(index);
 
-    mapController
-        .animateCamera(
-      CameraUpdate.newCameraPosition(
-        CameraPosition(target: marker.position, zoom: 15),
-      ),
-    )
-        .then((val) {
-      setState(() {});
-    });
+      mapController
+          ?.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(target: marker.position, zoom: 15),
+        ),
+      )
+          .then((val) {
+        setState(() {});
+      });
+    } catch (e) {
+      print(e);
+    }
   }
 
   Future<void> rebuildMarkers(int index) async {
     int current = widget.items[index].id;
-
-    if (widget.markerIcon == null) widget.markerIcon = await getBytesFromAsset('packages/interactive_maps_marker/assets/marker.png', 100);
-    if (widget.markerIconSelected == null) widget.markerIconSelected = await getBytesFromAsset('packages/interactive_maps_marker/assets/marker_selected.png', 100);
 
     Set<Marker> _markers = Set<Marker>();
 
@@ -185,7 +196,8 @@ class _InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
             );
             _pageChanged(tappedIndex);
           },
-          icon: item.id == current ? BitmapDescriptor.fromBytes(widget.markerIconSelected) : BitmapDescriptor.fromBytes(widget.markerIcon),
+          icon:  BitmapDescriptor.defaultMarkerWithHue(item.id == current ? BitmapDescriptor.hueGreen : BitmapDescriptor.hueRed),
+          // icon: item.id == current ? BitmapDescriptor.fromBytes(widget.markerIconSelected!) : BitmapDescriptor.fromBytes(widget.markerIcon!),
         ),
       );
     });

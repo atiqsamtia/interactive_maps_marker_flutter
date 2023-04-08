@@ -3,7 +3,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:interactive_maps_marker/interactive_maps_marker.dart';
 
 class SimpleUsage extends StatelessWidget {
-  final List<MarkerItem> markers = List()
+  final List<MarkerItem> markers = []
     ..add(MarkerItem(id: 1, latitude: 31.4673274, longitude: 74.2637687))
     ..add(MarkerItem(id: 2, latitude: 31.4718461, longitude: 74.3531591))
     ..add(MarkerItem(id: 3, latitude: 31.5325107, longitude: 74.3610325))
@@ -28,7 +28,7 @@ class SimpleUsage extends StatelessWidget {
 }
 
 class BottomTile extends StatelessWidget {
-  const BottomTile({@required this.item});
+  const BottomTile({required this.item});
 
   final MarkerItem item;
 

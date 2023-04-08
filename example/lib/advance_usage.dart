@@ -27,8 +27,14 @@ class StoreItem implements MarkerItem {
 
   String title;
   String subTitle;
-  String image;
+  String image = '';
   String details;
 
-  StoreItem({this.id, this.latitude, this.longitude, this.title, this.subTitle, this.details});
+  StoreItem(
+      {required this.id,
+      required this.latitude,
+      required this.longitude,
+      required this.title,
+      required this.subTitle,
+      required this.details});
 }

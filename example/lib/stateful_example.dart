@@ -9,7 +9,7 @@ class StatefulExample extends StatefulWidget {
 }
 
 class _StatefulExampleState extends State<StatefulExample> {
-  List<MarkerItem> markers = List();
+  List<MarkerItem> markers = [];
 
   @override
   void initState() {

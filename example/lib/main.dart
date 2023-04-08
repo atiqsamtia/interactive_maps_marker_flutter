@@ -35,7 +35,7 @@ class MyHomePage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            RaisedButton(
+            ElevatedButton(
               child: Text('Simple Usage'),
               onPressed: () {
                 Navigator.push(
@@ -44,7 +44,7 @@ class MyHomePage extends StatelessWidget {
                 );
               },
             ),
-            RaisedButton(
+            ElevatedButton(
               child: Text('Stateful Widget Example'),
               onPressed: () {
                 Navigator.push(
@@ -53,7 +53,7 @@ class MyHomePage extends StatelessWidget {
                 );
               },
             ),
-            RaisedButton(
+            ElevatedButton(
               child: Text('Advanced Usage'),
               onPressed: () {
                 Navigator.push(
