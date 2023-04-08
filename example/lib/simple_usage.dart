@@ -44,7 +44,7 @@ class BottomTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text("Store Name", style: Theme.of(context).textTheme.headline5),
+                  Text("Store Name ${item.id}", style: Theme.of(context).textTheme.headline5),
                   Text("${item.latitude} , ${item.longitude}", style: Theme.of(context).textTheme.caption),
                   stars(),
                   Expanded(

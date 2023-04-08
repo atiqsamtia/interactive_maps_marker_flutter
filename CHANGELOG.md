@@ -1,3 +1,6 @@
+## [0.0.5] - (April 09, 2023)
+
+* Add `InteractiveMapsController` for communicating after the map is loaded.
 
 ## [0.0.4] - (April 08, 2023)
 

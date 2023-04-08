@@ -1,11 +1,13 @@
 library interactive_maps_marker; // interactive_marker_list
 
 import 'dart:async';
-import 'dart:typed_data';
 
 import "package:flutter/material.dart";
 import 'package:flutter/widgets.dart';
+import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:interactive_maps_marker/interactive_maps_controller.dart';
+export 'package:interactive_maps_marker/interactive_maps_controller.dart';
 
 import './utils.dart';
 
@@ -30,6 +32,8 @@ class InteractiveMapsMarker extends StatefulWidget {
   final EdgeInsetsGeometry itemPadding;
   final Alignment contentAlignment;
 
+  InteractiveMapsController? controller;
+
   InteractiveMapsMarker({
     required this.items,
     this.itemBuilder,
@@ -39,6 +43,7 @@ class InteractiveMapsMarker extends StatefulWidget {
     this.zoom = 12.0,
     this.itemPadding = const EdgeInsets.only(bottom: 80.0),
     this.contentAlignment = Alignment.bottomCenter,
+    this.controller,
   }){
     if(itemBuilder == null && itemContent == null){
       throw Exception('itemBuilder or itemContent must be provided');
@@ -55,17 +60,23 @@ class InteractiveMapsMarker extends StatefulWidget {
   Uint8List? markerIconSelected;
 
   @override
-  _InteractiveMapsMarkerState createState() => _InteractiveMapsMarkerState();
+  InteractiveMapsMarkerState createState() {
+    var state = InteractiveMapsMarkerState();
+    if(controller != null){
+      controller!.currentState(state);
+    }
+    return state;
+  }
 }
 
-class _InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
+class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   Completer<GoogleMapController> _controller = Completer();
   GoogleMapController? mapController;
   PageController pageController = PageController(viewportFraction: 0.9);
 
   Set<Marker> markers = {};
   int currentIndex = 0;
-  ValueNotifier selectedMarker = ValueNotifier<int?>(null);
+  ValueNotifier selectedMarker = ValueNotifier<int?>(0);
 
   @override
   void initState() {
@@ -118,9 +129,10 @@ class _InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
       child: ValueListenableBuilder(
         valueListenable: selectedMarker,
         builder: (context, value, child) {
+          print('Values changed');
           return GoogleMap(
             zoomControlsEnabled: false,
-            markers: value == null ? {} : markers,
+            markers: markers,
             myLocationEnabled: true,
             myLocationButtonEnabled: false,
             onMapCreated: _onMapCreated,
@@ -160,8 +172,8 @@ class _InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   void _pageChanged(int index) {
     try {
       setState(() => currentIndex = index);
-      Marker marker = markers.elementAt(index);
       rebuildMarkers(index);
+      Marker marker = markers.elementAt(index);
 
       mapController
           ?.animateCamera(
@@ -178,6 +190,7 @@ class _InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   }
 
   Future<void> rebuildMarkers(int index) async {
+    if(widget.items.length == 0) return;
     int current = widget.items[index].id;
 
     Set<Marker> _markers = Set<Marker>();
@@ -205,6 +218,17 @@ class _InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
     setState(() {
       markers = _markers;
     });
+    // selectedMarker.value = current;
     selectedMarker.value = current;
+    // selectedMarker.notifyListeners();
+  }
+
+  void setIndex(int index){
+    pageController.animateToPage(
+      index,
+      duration: Duration(milliseconds: 300),
+      curve: Curves.bounceInOut,
+    );
+    _pageChanged(index);
   }
 }
