@@ -1,3 +1,7 @@
+## [0.0.6] - (May 04, 2023)
+
+* add `reset` method to `InteractiveMapsMarkerController`
+
 ## [0.0.5] - (April 09, 2023)
 
 * Add `InteractiveMapsController` for communicating after the map is loaded.

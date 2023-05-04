@@ -5,6 +5,8 @@ import 'interactive_maps_marker.dart';
 class InteractiveMapsController {
   InteractiveMapsMarkerState? _state;
 
+  InteractiveMapsMarkerState? get state => _state;
+
   void currentState(InteractiveMapsMarkerState state) {
     _state = state;
   }
@@ -18,6 +20,13 @@ class InteractiveMapsController {
   void rebuild([int? index]) {
     _state?.setState(() {
       _state?.setIndex(index ?? _state?.currentIndex ?? 0);
+    });
+  }
+
+  void reset(){
+    _state?.rebuildMarkers(0);
+    _state?.setState(() {
+      _state?.currentIndex = 0;
     });
   }
 
