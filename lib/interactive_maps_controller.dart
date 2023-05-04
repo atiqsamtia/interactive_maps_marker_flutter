@@ -1,3 +1,4 @@
+import 'package:flutter/animation.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'interactive_maps_marker.dart';
@@ -23,11 +24,14 @@ class InteractiveMapsController {
     });
   }
 
-  void reset(){
+  void reset() {
+    _state?.pageController.jumpToPage(0);
     _state?.rebuildMarkers(0);
-    _state?.setState(() {
-      _state?.currentIndex = 0;
-    });
+    getMapController()?.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(target: _state!.widget.center, zoom: _state!.widget.zoom),
+      ),
+    );
   }
 
   GoogleMapController? getMapController() {

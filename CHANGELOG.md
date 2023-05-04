@@ -1,3 +1,7 @@
+## [0.0.7] - (May 04, 2023)
+
+* FIX `reset` method for better predictability
+
 ## [0.0.6] - (May 04, 2023)
 
 * add `reset` method to `InteractiveMapsMarkerController`
