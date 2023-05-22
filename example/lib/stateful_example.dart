@@ -20,7 +20,7 @@ class _StatefulExampleState extends State<StatefulExample> {
       setState(() {
         markers.add(MarkerItem(id: 1, latitude: 31.4673274, longitude: 74.2637687));
         markers.add(MarkerItem(id: 2, latitude: 31.4718461, longitude: 74.3531591));
-        controller.reset();
+        controller.reset(index: 0);
       });
     });
   }
@@ -37,7 +37,7 @@ class _StatefulExampleState extends State<StatefulExample> {
               setState(() {
                 markers.add(MarkerItem(id: 3, latitude: 31.5325107, longitude: 74.3610325));
                 markers.add(MarkerItem(id: 4, latitude: 31.4668809, longitude: 74.31354));
-                controller.reset();
+                controller.reset(index: 0);
               });
             },
           )
@@ -50,6 +50,9 @@ class _StatefulExampleState extends State<StatefulExample> {
         itemContent: (context, index) {
           MarkerItem item = markers[index];
           return BottomTile(item: item);
+        },
+        onLastItem: () {
+          print('Last Item');
         },
       ),
     );

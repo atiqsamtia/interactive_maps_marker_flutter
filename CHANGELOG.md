@@ -1,3 +1,8 @@
+## [0.0.8] - (May 04, 2023)
+
+* Add `onLastItem` callback to notify when last item is reached.
+* Add `zoomFocus` parameter to focus on item when tapped.
+
 ## [0.0.7] - (May 04, 2023)
 
 * FIX `reset` method for better predictability

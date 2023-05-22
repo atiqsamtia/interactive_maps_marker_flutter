@@ -23,6 +23,7 @@ class InteractiveMapsMarker extends StatefulWidget {
   final LatLng center;
   final double itemHeight;
   final double zoom;
+  final double zoomFocus;
   @required
   List<MarkerItem> items;
   @required
@@ -33,6 +34,7 @@ class InteractiveMapsMarker extends StatefulWidget {
   final Alignment contentAlignment;
 
   InteractiveMapsController? controller;
+  VoidCallback? onLastItem;
 
   InteractiveMapsMarker({
     required this.items,
@@ -41,9 +43,11 @@ class InteractiveMapsMarker extends StatefulWidget {
     this.itemContent,
     this.itemHeight = 116,
     this.zoom = 12.0,
+    this.zoomFocus = 15.0,
     this.itemPadding = const EdgeInsets.only(bottom: 80.0),
     this.contentAlignment = Alignment.bottomCenter,
     this.controller,
+    this.onLastItem,
   }){
     if(itemBuilder == null && itemContent == null){
       throw Exception('itemBuilder or itemContent must be provided');
@@ -172,13 +176,16 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   void _pageChanged(int index) {
     try {
       setState(() => currentIndex = index);
+      if(widget.onLastItem != null && index == widget.items.length - 1){
+        widget.onLastItem!();
+      }
       rebuildMarkers(index);
       Marker marker = markers.elementAt(index);
 
       mapController
           ?.animateCamera(
         CameraUpdate.newCameraPosition(
-          CameraPosition(target: marker.position, zoom: 15),
+          CameraPosition(target: marker.position, zoom: widget.zoomFocus),
         ),
       )
           .then((val) {

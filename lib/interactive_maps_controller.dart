@@ -24,9 +24,9 @@ class InteractiveMapsController {
     });
   }
 
-  void reset() {
-    _state?.pageController.jumpToPage(0);
-    _state?.rebuildMarkers(0);
+  void reset({int? index}) {
+    _state?.pageController.jumpToPage(index ?? _state?.currentIndex ?? 0);
+    _state?.rebuildMarkers(index ?? _state?.currentIndex ?? 0);
     getMapController()?.animateCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(target: _state!.widget.center, zoom: _state!.widget.zoom),
