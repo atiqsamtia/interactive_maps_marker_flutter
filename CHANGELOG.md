@@ -1,3 +1,7 @@
+## [0.0.9] - (May 23, 2023)
+
+* Add `zoomKeepOnTap` parameter to keep remember zoom level on item when tapped.
+
 ## [0.0.8] - (May 04, 2023)
 
 * Add `onLastItem` callback to notify when last item is reached.

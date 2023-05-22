@@ -24,6 +24,7 @@ class InteractiveMapsMarker extends StatefulWidget {
   final double itemHeight;
   final double zoom;
   final double zoomFocus;
+  final bool zoomKeepOnTap;
   @required
   List<MarkerItem> items;
   @required
@@ -44,6 +45,7 @@ class InteractiveMapsMarker extends StatefulWidget {
     this.itemHeight = 116,
     this.zoom = 12.0,
     this.zoomFocus = 15.0,
+    this.zoomKeepOnTap = false,
     this.itemPadding = const EdgeInsets.only(bottom: 80.0),
     this.contentAlignment = Alignment.bottomCenter,
     this.controller,
@@ -184,9 +186,13 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
 
       mapController
           ?.animateCamera(
-        CameraUpdate.newCameraPosition(
-          CameraPosition(target: marker.position, zoom: widget.zoomFocus),
-        ),
+        widget.zoomKeepOnTap
+            ? CameraUpdate.newLatLng(
+                LatLng(marker.position.latitude, marker.position.longitude),
+              )
+            : CameraUpdate.newCameraPosition(
+                CameraPosition(target: marker.position, zoom: widget.zoomFocus),
+              ),
       )
           .then((val) {
         setState(() {});
