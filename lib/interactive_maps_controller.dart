@@ -1,4 +1,3 @@
-import 'package:flutter/animation.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'interactive_maps_marker.dart';
