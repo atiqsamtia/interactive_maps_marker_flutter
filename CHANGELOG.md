@@ -1,3 +1,7 @@
+## [0.0.10] - (July 14, 2023)
+
+* FIX: markers not updating when whole dataset is replaced
+
 ## [0.0.9] - (May 23, 2023)
 
 * Add `zoomKeepOnTap` parameter to keep remember zoom level on item when tapped.

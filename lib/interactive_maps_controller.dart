@@ -24,13 +24,15 @@ class InteractiveMapsController {
   }
 
   void reset({int? index}) {
-    _state?.pageController.jumpToPage(index ?? _state?.currentIndex ?? 0);
-    _state?.rebuildMarkers(index ?? _state?.currentIndex ?? 0);
-    getMapController()?.animateCamera(
-      CameraUpdate.newCameraPosition(
-        CameraPosition(target: _state!.widget.center, zoom: _state!.widget.zoom),
-      ),
-    );
+    Future.delayed(Duration(milliseconds: 200)).then((value) {
+      _state?.pageController.jumpToPage(index ?? _state?.currentIndex ?? 0);
+      _state?.rebuildMarkers(index ?? _state?.currentIndex ?? 0);
+      getMapController()?.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(target: _state!.widget.center, zoom: _state!.widget.zoom),
+        ),
+      );
+    });
   }
 
   GoogleMapController? getMapController() {
