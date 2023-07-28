@@ -80,6 +80,8 @@ class InteractiveMapsMarker extends StatefulWidget {
     }
     return state;
   }
+
+  void Function(CameraPosition)? get onCameraMove => onCameraMove;
 }
 
 class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
@@ -90,7 +92,6 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   Set<Marker> markers = {};
   int currentIndex = 0;
   ValueNotifier selectedMarker = ValueNotifier<int?>(0);
-
   @override
   void initState() {
     rebuildMarkers(currentIndex);
@@ -151,7 +152,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
             myLocationEnabled: true,
             myLocationButtonEnabled: false,
             onMapCreated: _onMapCreated,
-            onCameraMove: _onCameraMove,
+            onCameraMove: onCameraMove,
             initialCameraPosition: CameraPosition(
               target: widget.center,
               zoom: widget.zoom,
