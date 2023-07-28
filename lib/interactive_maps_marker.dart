@@ -12,7 +12,7 @@ export 'package:interactive_maps_marker/interactive_maps_controller.dart';
 import './utils.dart';
 
 class MarkerItem {
-  int id;
+  String id;
   double latitude;
   double longitude;
 
