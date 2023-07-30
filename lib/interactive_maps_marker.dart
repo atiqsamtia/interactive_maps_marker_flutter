@@ -27,6 +27,7 @@ class InteractiveMapsMarker extends StatefulWidget {
   final double zoomFocus;
   final bool zoomKeepOnTap;
   void Function(CameraPosition)? onCameraMove;
+  void Function? onCameraIdle;
   @required
   List<MarkerItem> items;
   @required
@@ -53,6 +54,7 @@ class InteractiveMapsMarker extends StatefulWidget {
     this.controller,
     this.onLastItem,
     this.onCameraMove,
+    this.onCameraIdle,
   }) {
     if (itemBuilder == null && itemContent == null) {
       throw Exception('itemBuilder or itemContent must be provided');
@@ -151,6 +153,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
             myLocationButtonEnabled: false,
             onMapCreated: _onMapCreated,
             onCameraMove: widget.onCameraMove,
+            onCameraIdle: widget.onCameraIdle,
             initialCameraPosition: CameraPosition(
               target: widget.center,
               zoom: widget.zoom,
