@@ -27,7 +27,7 @@ class InteractiveMapsMarker extends StatefulWidget {
   final double zoomFocus;
   final bool zoomKeepOnTap;
   void Function(CameraPosition)? onCameraMove;
-  void Function? onCameraIdle;
+  void Function()? onCameraIdle;
   @required
   List<MarkerItem> items;
   @required
