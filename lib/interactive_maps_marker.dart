@@ -101,11 +101,6 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
     super.didChangeDependencies();
   }
 
-  void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
-    _controller.complete(controller);
-  }
-
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<int>(
