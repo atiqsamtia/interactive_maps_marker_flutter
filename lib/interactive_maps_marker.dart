@@ -234,10 +234,13 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
             );
             _pageChanged(tappedIndex);
           },
-          icon: BitmapDescriptor.defaultMarkerWithHue(item.id == current
+          /* icon: BitmapDescriptor.defaultMarkerWithHue(item.id == current
               ? BitmapDescriptor.hueGreen
               : BitmapDescriptor.hueRed),
-          // icon: item.id == current ? BitmapDescriptor.fromBytes(widget.markerIconSelected!) : BitmapDescriptor.fromBytes(widget.markerIcon!),
+          // */
+          icon: item.id == current
+              ? BitmapDescriptor.fromBytes(widget.markerIconSelected!)
+              : BitmapDescriptor.fromBytes(widget.markerIcon!),
         ),
       );
     });
