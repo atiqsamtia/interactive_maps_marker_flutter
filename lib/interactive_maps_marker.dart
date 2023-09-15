@@ -71,6 +71,8 @@ class InteractiveMapsMarker extends StatefulWidget {
 
   Uint8List? markerIcon;
   Uint8List? markerIconSelected;
+  Uint8List? markerIconDark;
+  Uint8List? markerIconSelectedDark;
 
   @override
   InteractiveMapsMarkerState createState() {
@@ -215,7 +217,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
     }
   }
 
- /*  Future<Uint8List> getBytesFromAsset(String path, int width) async {
+  /*  Future<Uint8List> getBytesFromAsset(String path, int width) async {
     ByteData data = await rootBundle.load(path);
     ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(),
         targetWidth: width);
@@ -230,12 +232,22 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
     int current = widget.items[index].id;
 
     Set<Marker> _markers = Set<Marker>();
-    if (widget.markerIcon == null)
+    if (widget.markerIcon == null &&
+        Theme.of(context).brightness != Brightness.dark)
       widget.markerIcon = await getBytesFromAsset(
           'packages/interactive_maps_marker/assets/marker.png', 100);
-    if (widget.markerIconSelected == null)
+    else
+      widget.markerIcon = await getBytesFromAsset(
+          'packages/interactive_maps_marker/assets/marker_darkmode.png', 100);
+
+    if (widget.markerIconSelected == null &&
+        Theme.of(context).brightness != Brightness.dark)
       widget.markerIconSelected = await getBytesFromAsset(
           'packages/interactive_maps_marker/assets/marker_selected.png', 100);
+    else
+      widget.markerIconSelected = await getBytesFromAsset(
+          'packages/interactive_maps_marker/assets/selectedMarker_darkmode.png',
+          100);
     widget.items.forEach((item) async {
       _markers.add(
         Marker(
@@ -256,7 +268,8 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
               : BitmapDescriptor.hueRed),
           // */
           icon: item.id == current
-              ? BitmapDescriptor.fromBytes(widget.markerIconSelected as Uint8List)
+              ? BitmapDescriptor.fromBytes(
+                  widget.markerIconSelected as Uint8List)
               : BitmapDescriptor.fromBytes(widget.markerIcon as Uint8List),
         ),
       );
