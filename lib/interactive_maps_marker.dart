@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:interactive_maps_marker/interactive_maps_controller.dart';
 export 'package:interactive_maps_marker/interactive_maps_controller.dart';
+import 'package:geolocator/geolocator.dart';
 
 import './utils.dart';
 
@@ -88,6 +89,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   Completer<GoogleMapController> _controller = Completer();
   GoogleMapController? mapController;
   PageController pageController = PageController(viewportFraction: 0.9);
+  LatLng? _initialPosition;
 
   Set<Marker> markers = {};
   int currentIndex = 0;
@@ -95,6 +97,8 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
 
   @override
   void initState() {
+    _getUserLocation();
+
     rebuildMarkers(currentIndex);
     super.initState();
   }
@@ -103,6 +107,16 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   void didChangeDependencies() {
     rebuildMarkers(currentIndex);
     super.didChangeDependencies();
+  }
+
+  void _getUserLocation() async {
+    var position = await GeolocatorPlatform.instance.getCurrentPosition(
+        locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.bestForNavigation));
+
+    setState(() {
+      _initialPosition = LatLng(position.latitude, position.longitude);
+    });
   }
 
   @override
@@ -158,7 +172,9 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
               );
             },
             initialCameraPosition: CameraPosition(
-              target: widget.center,
+              target: _initialPosition != null
+                  ? _initialPosition as LatLng
+                  : widget.center,
               zoom: widget.zoom,
             ),
           );
