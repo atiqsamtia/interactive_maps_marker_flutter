@@ -108,7 +108,8 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
     rebuildMarkers(currentIndex);
     super.didChangeDependencies();
   }
-   Future<bool> _handleLocationPermission() async {
+
+  Future<bool> _handleLocationPermission() async {
     bool serviceEnabled;
     LocationPermission permission;
 
@@ -136,6 +137,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
     }
     return true;
   }
+
   void _getUserLocation() async {
     final hasPermission = await _handleLocationPermission();
 
@@ -202,9 +204,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
               );
             },
             initialCameraPosition: CameraPosition(
-              target: _initialPosition != null
-                  ? _initialPosition as LatLng
-                  : widget.center,
+              target: _initialPosition as LatLng,
               zoom: widget.zoom,
             ),
           );
