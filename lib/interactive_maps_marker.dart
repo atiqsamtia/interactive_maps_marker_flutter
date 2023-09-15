@@ -158,7 +158,18 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
       builder: (context, snapshot) {
         return Stack(
           children: <Widget>[
-            _buildMap(),
+            _initialPosition != null
+                ? _buildMap()
+                : Container(
+                    child: Center(
+                      child: Text(
+                        'loading map..',
+                        style: TextStyle(
+                            fontFamily: 'Avenir-Medium',
+                            color: Colors.grey[400]),
+                      ),
+                    ),
+                  ),
             Align(
               alignment: widget.contentAlignment,
               child: Padding(
