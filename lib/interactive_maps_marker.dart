@@ -232,20 +232,17 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
     int current = widget.items[index].id;
 
     Set<Marker> _markers = Set<Marker>();
-    if (widget.markerIcon == null &&
-        Theme.of(context).brightness != Brightness.dark)
+    if (widget.markerIcon == null)
       widget.markerIcon = await getBytesFromAsset(
           'packages/interactive_maps_marker/assets/marker.png', 100);
-    else
-      widget.markerIcon = await getBytesFromAsset(
-          'packages/interactive_maps_marker/assets/marker_darkmode.png', 100);
-
-    if (widget.markerIconSelected == null &&
-        Theme.of(context).brightness != Brightness.dark)
+    if (widget.markerIconSelected == null)
       widget.markerIconSelected = await getBytesFromAsset(
           'packages/interactive_maps_marker/assets/marker_selected.png', 100);
-    else
-      widget.markerIconSelected = await getBytesFromAsset(
+    if (widget.markerIconDark == null)
+      widget.markerIconDark = await getBytesFromAsset(
+          'packages/interactive_maps_marker/assets/marker_darkmode.png', 100);
+    if (widget.markerIconSelectedDark == null)
+      widget.markerIconSelectedDark = await getBytesFromAsset(
           'packages/interactive_maps_marker/assets/selectedMarker_darkmode.png',
           100);
     widget.items.forEach((item) async {
@@ -269,8 +266,13 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
           // */
           icon: item.id == current
               ? BitmapDescriptor.fromBytes(
-                  widget.markerIconSelected as Uint8List)
-              : BitmapDescriptor.fromBytes(widget.markerIcon as Uint8List),
+                  Theme.of(context).brightness != Brightness.dark
+                      ? widget.markerIconSelected as Uint8List
+                      : widget.markerIconSelectedDark as Uint8List)
+              : BitmapDescriptor.fromBytes(
+                  Theme.of(context).brightness != Brightness.dark
+                      ? widget.markerIcon as Uint8List
+                      : widget.markerIconDark as Uint8List),
         ),
       );
     });
