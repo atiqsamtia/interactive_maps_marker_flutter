@@ -1,6 +1,7 @@
 library interactive_maps_marker; // interactive_marker_list
 
 import 'dart:async';
+import 'dart:ui' as ui;
 
 import "package:flutter/material.dart";
 import 'package:flutter/widgets.dart';
@@ -55,17 +56,18 @@ class InteractiveMapsMarker extends StatefulWidget {
     if (itemBuilder == null && itemContent == null) {
       throw Exception('itemBuilder or itemContent must be provided');
     }
-    readIcons();
+/*     readIcons();
+ */
   }
 
-  void readIcons() async {
+  /* void readIcons() async {
     if (markerIcon == null)
       markerIcon = await getBytesFromAsset(
           'packages/interactive_maps_marker/assets/marker.png', 100);
     if (markerIconSelected == null)
       markerIconSelected = await getBytesFromAsset(
           'packages/interactive_maps_marker/assets/marker_selected.png', 100);
-  }
+  } */
 
   Uint8List? markerIcon;
   Uint8List? markerIconSelected;
@@ -213,13 +215,28 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
     }
   }
 
+ /*  Future<Uint8List> getBytesFromAsset(String path, int width) async {
+    ByteData data = await rootBundle.load(path);
+    ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(),
+        targetWidth: width);
+    ui.FrameInfo fi = await codec.getNextFrame();
+    return (await fi.image.toByteData(format: ui.ImageByteFormat.png))!
+        .buffer
+        .asUint8List();
+  } */
+
   Future<void> rebuildMarkers(int index) async {
     if (widget.items.length == 0) return;
     int current = widget.items[index].id;
 
     Set<Marker> _markers = Set<Marker>();
-
-    widget.items.forEach((item) {
+    if (widget.markerIcon == null)
+      widget.markerIcon = await getBytesFromAsset(
+          'packages/interactive_maps_marker/assets/marker.png', 100);
+    if (widget.markerIconSelected == null)
+      widget.markerIconSelected = await getBytesFromAsset(
+          'packages/interactive_maps_marker/assets/marker_selected.png', 100);
+    widget.items.forEach((item) async {
       _markers.add(
         Marker(
           markerId: MarkerId(item.id.toString()),
@@ -239,8 +256,8 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
               : BitmapDescriptor.hueRed),
           // */
           icon: item.id == current
-              ? BitmapDescriptor.fromBytes(widget.markerIconSelected!)
-              : BitmapDescriptor.fromBytes(widget.markerIcon!),
+              ? BitmapDescriptor.fromBytes(widget.markerIconSelected as Uint8List)
+              : BitmapDescriptor.fromBytes(widget.markerIcon as Uint8List),
         ),
       );
     });
