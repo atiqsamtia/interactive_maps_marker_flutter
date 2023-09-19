@@ -143,19 +143,10 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
           id: markerLocations.indexOf(markerLocation).toString(),
           position: markerLocation,
           icon: BitmapDescriptor.fromBytes(
-              Theme.of(context).brightness != Brightness.dark
-                  ? widget.markerIconSelected as Uint8List
-                  : widget.markerIconSelectedDark as Uint8List),
+              widget.markerIconSelected as Uint8List),
         ),
       );
     }
-
-    rebuildMarkers(currentIndex);
-    super.initState();
-  }
-
-  @override
-  void didChangeDependencies() {
     final Fluster<MapMarker> fluster = Fluster<MapMarker>(
         minZoom: 0,
         maxZoom: 21,
@@ -168,10 +159,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
           return MapMarker(
             id: cluster!.id.toString(),
             position: LatLng(latitude!, longitude!),
-            icon: BitmapDescriptor.fromBytes(
-                Theme.of(context).brightness != Brightness.dark
-                    ? widget.markerIcon as Uint8List
-                    : widget.markerIconDark as Uint8List),
+            icon: BitmapDescriptor.fromBytes(widget.markerIcon as Uint8List),
             isCluster: cluster.isCluster,
             clusterId: cluster.id,
             pointsSize: cluster.pointsSize,
@@ -182,6 +170,12 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
         .clusters([-180, -85, 180, 85], 12)
         .map((cluster) => cluster.toMarker())
         .toList();
+    rebuildMarkers(currentIndex);
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
     rebuildMarkers(currentIndex);
     super.didChangeDependencies();
   }
