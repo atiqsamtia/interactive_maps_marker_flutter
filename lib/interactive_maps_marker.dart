@@ -3,6 +3,7 @@ library interactive_maps_marker; // interactive_marker_list
 import 'dart:async';
 import 'dart:ui' as ui;
 
+import 'package:fluster/fluster.dart';
 import "package:flutter/material.dart";
 import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
@@ -12,6 +13,37 @@ export 'package:interactive_maps_marker/interactive_maps_controller.dart';
 import 'package:geolocator/geolocator.dart';
 
 import './utils.dart';
+
+class MapMarker extends Clusterable {
+  final String id;
+  final LatLng position;
+  final BitmapDescriptor icon;
+  MapMarker({
+    required this.id,
+    required this.position,
+    required this.icon,
+    isCluster = false,
+    clusterId,
+    pointsSize,
+    childMarkerId,
+  }) : super(
+          markerId: id,
+          latitude: position.latitude,
+          longitude: position.longitude,
+          isCluster: isCluster,
+          clusterId: clusterId,
+          pointsSize: pointsSize,
+          childMarkerId: childMarkerId,
+        );
+  Marker toMarker() => Marker(
+        markerId: MarkerId(id),
+        position: LatLng(
+          position.latitude,
+          position.longitude,
+        ),
+        icon: icon,
+      );
+}
 
 class MarkerItem {
   int id;
@@ -90,15 +122,56 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   GoogleMapController? mapController;
   PageController pageController = PageController(viewportFraction: 0.9);
   LatLng? _initialPosition;
-
-  Set<Marker> markers = {};
+   final List<MapMarker> markers = [];
+  final List<LatLng> markerLocations = [
+    LatLng(41.147125, -8.611249),
+    LatLng(41.145599, -8.610691),
+  ];
+  late List<Marker> googleMarkers;
+/*   Set<Marker> markers = {};
+ */
   int currentIndex = 0;
   ValueNotifier selectedMarker = ValueNotifier<int?>(0);
 
   @override
   void initState() {
     _getUserLocation();
-
+    for (LatLng markerLocation in markerLocations) {
+      markers.add(
+        MapMarker(
+          id: markerLocations.indexOf(markerLocation).toString(),
+          position: markerLocation,
+          icon: BitmapDescriptor.hueGreen as BitmapDescriptor,
+        ),
+      );
+    }
+    final Fluster<MapMarker> fluster = Fluster<MapMarker>(
+      minZoom: 7, // The min zoom at clusters will show
+      maxZoom: 15, // The max zoom at clusters will show
+      radius: 150, // Cluster radius in pixels
+      extent: 2048, // Tile extent. Radius is calculated with it.
+      nodeSize: 64, // Size of the KD-tree leaf node.
+      points: markers, // The list of markers created before
+      createCluster: (
+        // Create cluster marker
+        BaseCluster cluster,
+        double lng,
+        double lat,
+      ) =>
+          MapMarker(
+        id: cluster.id.toString(),
+        position: LatLng(lat, lng),
+        icon: BitmapDescriptor.hueRed as BitmapDescriptor,
+        isCluster: cluster.isCluster,
+        clusterId: cluster.id,
+        pointsSize: cluster.pointsSize,
+        childMarkerId: cluster.childMarkerId,
+      ),
+    );
+    final List<Marker> googleMarkers = fluster
+      .clusters([-180, -85, 180, 85], 10)
+      .map((cluster) => cluster.toMarker())
+      .toList();
     rebuildMarkers(currentIndex);
     super.initState();
   }
@@ -153,7 +226,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<int>(
+    return StreamBuilder<int?>(
       stream: null,
       initialData: 0,
       builder: (context, snapshot) {
@@ -202,7 +275,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
           print('Values changed');
           return GoogleMap(
             zoomControlsEnabled: false,
-            markers: markers,
+            markers:  googleMarkers.toSet(),
             myLocationEnabled: true,
             myLocationButtonEnabled: false,
             onMapCreated: (GoogleMapController controller) async {
@@ -255,7 +328,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
         widget.onLastItem!();
       }
       rebuildMarkers(index);
-      Marker marker = markers.elementAt(index);
+      Marker marker = markers.elementAt(index).toMarker();
 
       mapController
           ?.animateCamera(
@@ -303,7 +376,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
       widget.markerIconSelectedDark = await getBytesFromAsset(
           'packages/interactive_maps_marker/assets/selectedMarker_darkmode.png',
           100);
-    widget.items.forEach((item) async {
+/*     widget.items.forEach((item) async {
       _markers.add(
         Marker(
           markerId: MarkerId(item.id.toString()),
@@ -337,7 +410,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
 
     setState(() {
       markers = _markers;
-    });
+    }); */
     // selectedMarker.value = current;
     selectedMarker.value = current;
     // selectedMarker.notifyListeners();
