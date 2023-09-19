@@ -127,7 +127,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
     LatLng(41.147125, -8.611249),
     LatLng(41.145599, -8.610691),
   ];
-  late List<Marker> googleMarkers;
+  List<Marker> googleMarkers = [];
 /*   Set<Marker> markers = {};
  */
   int currentIndex = 0;
