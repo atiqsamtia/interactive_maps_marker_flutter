@@ -154,6 +154,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<int>(
+      stream: null,
       initialData: 0,
       builder: (context, snapshot) {
         return Stack(
