@@ -135,17 +135,14 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   ValueNotifier selectedMarker = ValueNotifier<int?>(0);
 
   @override
-  void initState() async {
+  void initState() {
     _getUserLocation();
-    await rebuildMarkers(currentIndex);
-
     for (LatLng markerLocation in markerLocations) {
       markers.add(
         MapMarker(
           id: markerLocations.indexOf(markerLocation).toString(),
           position: markerLocation,
-          icon: BitmapDescriptor.fromBytes(
-              widget.markerIconSelected as Uint8List),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
         ),
       );
     }
@@ -161,7 +158,8 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
           return MapMarker(
             id: cluster!.id.toString(),
             position: LatLng(latitude!, longitude!),
-            icon: BitmapDescriptor.fromBytes(widget.markerIcon as Uint8List),
+            icon: BitmapDescriptor.defaultMarkerWithHue(
+                BitmapDescriptor.hueOrange),
             isCluster: cluster.isCluster,
             clusterId: cluster.id,
             pointsSize: cluster.pointsSize,
@@ -172,6 +170,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
         .clusters([-180, -85, 180, 85], 12)
         .map((cluster) => cluster.toMarker())
         .toList();
+    rebuildMarkers(currentIndex);
     super.initState();
   }
 
