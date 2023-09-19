@@ -45,15 +45,6 @@ class MyHomePage extends StatelessWidget {
               },
             ),
             ElevatedButton(
-              child: Text('Stateful Widget Example'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => StatefulExample()),
-                );
-              },
-            ),
-            ElevatedButton(
               child: Text('Advanced Usage'),
               onPressed: () {
                 Navigator.push(

@@ -154,14 +154,9 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
         points: markers,
         createCluster:
             (BaseCluster? cluster, double? longitude, double? latitude) {
-          if (cluster == null) {
-            return MapMarker(
-                id: "",
-                position: LatLng(0, 0),
-                icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue));
-          }
+          
           return MapMarker(
-            id: cluster.id.toString(),
+            id: cluster!.id.toString(),
             position: LatLng(latitude!, longitude!),
             icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
             isCluster: cluster.isCluster,
