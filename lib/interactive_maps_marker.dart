@@ -137,6 +137,8 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   @override
   void initState() {
     _getUserLocation();
+    rebuildMarkers(currentIndex);
+
     for (LatLng markerLocation in markerLocations) {
       markers.add(
         MapMarker(
@@ -170,7 +172,6 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
         .clusters([-180, -85, 180, 85], 12)
         .map((cluster) => cluster.toMarker())
         .toList();
-    rebuildMarkers(currentIndex);
     super.initState();
   }
 
