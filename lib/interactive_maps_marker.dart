@@ -135,9 +135,9 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   ValueNotifier selectedMarker = ValueNotifier<int?>(0);
 
   @override
-  void initState() {
+  void initState() async {
     _getUserLocation();
-    rebuildMarkers(currentIndex);
+    await rebuildMarkers(currentIndex);
 
     for (LatLng markerLocation in markerLocations) {
       markers.add(
