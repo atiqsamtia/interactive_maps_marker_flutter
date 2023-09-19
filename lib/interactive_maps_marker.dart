@@ -141,7 +141,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
         MapMarker(
           id: markerLocations.indexOf(markerLocation).toString(),
           position: markerLocation,
-          icon: BitmapDescriptor.hueGreen as BitmapDescriptor,
+          icon: BitmapDescriptor.defaultMarker ,
         ),
       );
     }
@@ -161,7 +161,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
           MapMarker(
         id: cluster.id.toString(),
         position: LatLng(lat, lng),
-        icon: BitmapDescriptor.hueRed as BitmapDescriptor,
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
         isCluster: cluster.isCluster,
         clusterId: cluster.id,
         pointsSize: cluster.pointsSize,
