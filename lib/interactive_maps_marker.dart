@@ -124,8 +124,11 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   LatLng? _initialPosition;
   final List<MapMarker> markers = [];
   final List<LatLng> markerLocations = [
-    LatLng(41.147125, -8.611249),
-    LatLng(41.145599, -8.610691),
+    LatLng(40.729053, -73.987142),
+    LatLng(40.732130, -73.983891),
+    LatLng(40.732327, -73.984414),
+    LatLng(40.735525, -73.992725),
+    
   ];
   List<Marker> googleMarkers = [];
 /*   Set<Marker> markers = {};
@@ -146,8 +149,8 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
       );
     }
     final Fluster<MapMarker> fluster = Fluster<MapMarker>(
-        minZoom: 10,
-        maxZoom: 15,
+        minZoom: 0,
+        maxZoom: 21,
         radius: 150,
         extent: 4096,
         nodeSize: 64,
@@ -166,7 +169,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
           );
         });
      googleMarkers = fluster
-        .clusters([-180, -85, 180, 85], 10)
+        .clusters([-180, -85, 180, 85], 12)
         .map((cluster) => cluster.toMarker())
         .toList();
     rebuildMarkers(currentIndex);
