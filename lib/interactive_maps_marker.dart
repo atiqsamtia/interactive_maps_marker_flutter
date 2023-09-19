@@ -122,7 +122,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   GoogleMapController? mapController;
   PageController pageController = PageController(viewportFraction: 0.9);
   LatLng? _initialPosition;
-   final List<MapMarker> markers = [];
+  final List<MapMarker> markers = [];
   final List<LatLng> markerLocations = [
     LatLng(41.147125, -8.611249),
     LatLng(41.145599, -8.610691),
@@ -141,37 +141,39 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
         MapMarker(
           id: markerLocations.indexOf(markerLocation).toString(),
           position: markerLocation,
-          icon: BitmapDescriptor.defaultMarker ,
+          icon: BitmapDescriptor.defaultMarker,
         ),
       );
     }
     final Fluster<MapMarker> fluster = Fluster<MapMarker>(
-      minZoom: 7, // The min zoom at clusters will show
-      maxZoom: 15, // The max zoom at clusters will show
-      radius: 150, // Cluster radius in pixels
-      extent: 2048, // Tile extent. Radius is calculated with it.
-      nodeSize: 64, // Size of the KD-tree leaf node.
-      points: markers, // The list of markers created before
-      createCluster: (
-        // Create cluster marker
-        BaseCluster cluster,
-        double lng,
-        double lat,
-      ) =>
-          MapMarker(
-        id: cluster.id.toString(),
-        position: LatLng(lat, lng),
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-        isCluster: cluster.isCluster,
-        clusterId: cluster.id,
-        pointsSize: cluster.pointsSize,
-        childMarkerId: cluster.childMarkerId,
-      ),
-    );
+        minZoom: 10,
+        maxZoom: 15,
+        radius: 150,
+        extent: 4096,
+        nodeSize: 64,
+        points: markers,
+        createCluster:
+            (BaseCluster? cluster, double? longitude, double? latitude) {
+          if (cluster == null) {
+            return MapMarker(
+                id: "",
+                position: LatLng(0, 0),
+                icon: BitmapDescriptor.defaultMarker);
+          }
+          return MapMarker(
+            id: cluster.id.toString(),
+            position: LatLng(latitude!, longitude!),
+            icon: BitmapDescriptor.defaultMarker,
+            isCluster: cluster.isCluster,
+            clusterId: cluster.id,
+            pointsSize: cluster.pointsSize,
+            childMarkerId: cluster.childMarkerId,
+          );
+        });
     final List<Marker> googleMarkers = fluster
-      .clusters([-180, -85, 180, 85], 10)
-      .map((cluster) => cluster.toMarker())
-      .toList();
+        .clusters([-180, -85, 180, 85], 10)
+        .map((cluster) => cluster.toMarker())
+        .toList();
     rebuildMarkers(currentIndex);
     super.initState();
   }
@@ -275,7 +277,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
           print('Values changed');
           return GoogleMap(
             zoomControlsEnabled: false,
-            markers:  googleMarkers.toSet(),
+            markers: googleMarkers.toSet(),
             myLocationEnabled: true,
             myLocationButtonEnabled: false,
             onMapCreated: (GoogleMapController controller) async {
