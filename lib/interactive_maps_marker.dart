@@ -167,7 +167,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
           );
         });
     googleMarkers = fluster
-        .clusters([-180, -85, 180, 85], 12)
+        .clusters([7.597046,35.726447,12.716675,37.874853], 12)
         .map((cluster) => cluster.toMarker())
         .toList();
     rebuildMarkers(currentIndex);
