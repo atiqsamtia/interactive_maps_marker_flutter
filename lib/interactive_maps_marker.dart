@@ -124,11 +124,9 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   LatLng? _initialPosition;
   final List<MapMarker> markers = [];
   final List<LatLng> markerLocations = [
-    LatLng(40.729053, -73.987142),
-    LatLng(40.732130, -73.983891),
-    LatLng(40.732327, -73.984414),
-    LatLng(40.735525, -73.992725),
-    
+    LatLng(36.837446, 10.177410),
+    LatLng(36.813458, 10.133916),
+    LatLng(36.860832, 10.253826),
   ];
   List<Marker> googleMarkers = [];
 /*   Set<Marker> markers = {};
@@ -144,7 +142,10 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
         MapMarker(
           id: markerLocations.indexOf(markerLocation).toString(),
           position: markerLocation,
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+          icon: BitmapDescriptor.fromBytes(
+                  Theme.of(context).brightness != Brightness.dark
+                      ? widget.markerIconSelected as Uint8List
+                      : widget.markerIconSelectedDark as Uint8List),
         ),
       );
     }
@@ -157,18 +158,20 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
         points: markers,
         createCluster:
             (BaseCluster? cluster, double? longitude, double? latitude) {
-          
           return MapMarker(
             id: cluster!.id.toString(),
             position: LatLng(latitude!, longitude!),
-            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+            icon: BitmapDescriptor.fromBytes(
+                  Theme.of(context).brightness != Brightness.dark
+                      ? widget.markerIcon as Uint8List
+                      : widget.markerIconDark as Uint8List),
             isCluster: cluster.isCluster,
             clusterId: cluster.id,
             pointsSize: cluster.pointsSize,
             childMarkerId: cluster.childMarkerId,
           );
         });
-     googleMarkers = fluster
+    googleMarkers = fluster
         .clusters([-180, -85, 180, 85], 12)
         .map((cluster) => cluster.toMarker())
         .toList();
