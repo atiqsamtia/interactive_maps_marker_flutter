@@ -165,7 +165,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
             childMarkerId: cluster.childMarkerId,
           );
         });
-    final List<Marker> googleMarkers = fluster
+     googleMarkers = fluster
         .clusters([-180, -85, 180, 85], 10)
         .map((cluster) => cluster.toMarker())
         .toList();
