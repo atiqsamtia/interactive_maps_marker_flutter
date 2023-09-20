@@ -13,37 +13,8 @@ export 'package:interactive_maps_marker/interactive_maps_controller.dart';
 import 'package:geolocator/geolocator.dart';
 
 import './utils.dart';
-
-class MapMarker extends Clusterable {
-  final String id;
-  final LatLng position;
-  final BitmapDescriptor icon;
-  MapMarker({
-    required this.id,
-    required this.position,
-    required this.icon,
-    isCluster = false,
-    clusterId,
-    pointsSize,
-    childMarkerId,
-  }) : super(
-          markerId: id,
-          latitude: position.latitude,
-          longitude: position.longitude,
-          isCluster: isCluster,
-          clusterId: clusterId,
-          pointsSize: pointsSize,
-          childMarkerId: childMarkerId,
-        );
-  Marker toMarker() => Marker(
-        markerId: MarkerId(id),
-        position: LatLng(
-          position.latitude,
-          position.longitude,
-        ),
-        icon: icon,
-      );
-}
+import 'helpers/map_helper.dart';
+import 'helpers/map_marker.dart';
 
 class MarkerItem {
   int id;
@@ -122,54 +93,63 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   GoogleMapController? mapController;
   PageController pageController = PageController(viewportFraction: 0.9);
   LatLng? _initialPosition;
-  final List<MapMarker> markers = [];
-  final List<LatLng> markerLocations = [
-    LatLng(36.837446, 10.177410),
-    LatLng(36.813458, 10.133916),
-    LatLng(36.860832, 10.253826),
-  ];
+
   List<Marker> googleMarkers = [];
 /*   Set<Marker> markers = {};
  */
   int currentIndex = 0;
   ValueNotifier selectedMarker = ValueNotifier<int?>(0);
 
+  /// Set of displayed markers and cluster markers on the map
+  final Set<Marker> _markers = Set();
+
+  /// Minimum zoom at which the markers will cluster
+  final int _minClusterZoom = 0;
+
+  /// Maximum zoom at which the markers will cluster
+  final int _maxClusterZoom = 19;
+
+  /// [Fluster] instance used to manage the clusters
+  Fluster<MapMarker>? _clusterManager;
+
+  /// Current map zoom. Initial zoom will be 15, street level
+  double _currentZoom = 15;
+
+  /// Map loading flag
+  bool _isMapLoading = true;
+
+  /// Markers loading flag
+  bool _areMarkersLoading = true;
+
+  /// Url image used on normal markers
+  final String _markerImageUrl =
+      'https://img.icons8.com/office/80/000000/marker.png';
+
+  /// Color of the cluster circle
+  final Color _clusterColor = Colors.blue;
+
+  /// Color of the cluster text
+  final Color _clusterTextColor = Colors.white;
+    final List<MapMarker> markers = [];
+
+  /// Example marker coordinates
+  final List<LatLng> _markerLocations = [
+    LatLng(41.147125, -8.611249),
+    LatLng(41.145599, -8.610691),
+    LatLng(41.145645, -8.614761),
+    LatLng(41.146775, -8.614913),
+    LatLng(41.146982, -8.615682),
+    LatLng(41.140558, -8.611530),
+    LatLng(41.138393, -8.608642),
+    LatLng(41.137860, -8.609211),
+    LatLng(41.138344, -8.611236),
+    LatLng(41.139813, -8.609381),
+  ];
+
   @override
   void initState() {
     _getUserLocation();
-    for (LatLng markerLocation in markerLocations) {
-      markers.add(
-        MapMarker(
-          id: markerLocations.indexOf(markerLocation).toString(),
-          position: markerLocation,
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-        ),
-      );
-    }
-    final Fluster<MapMarker> fluster = Fluster<MapMarker>(
-        minZoom: 0,
-        maxZoom: 21,
-        radius: 150 ~/ 2,
-        extent: 2048,
-        nodeSize: 32,
-        points: markers,
-        createCluster:
-            (BaseCluster? cluster, double? longitude, double? latitude) {
-          return MapMarker(
-            id: cluster!.id.toString(),
-            position: LatLng(latitude!, longitude!),
-            icon: BitmapDescriptor.defaultMarkerWithHue(
-                BitmapDescriptor.hueOrange),
-            isCluster: cluster.isCluster,
-            clusterId: cluster.id,
-            pointsSize: cluster.pointsSize,
-            childMarkerId: cluster.childMarkerId,
-          );
-        });
-    googleMarkers = fluster
-        .clusters([7.597046,35.726447,12.716675,37.874853], 12)
-        .map((cluster) => cluster.toMarker())
-        .toList();
+
     rebuildMarkers(currentIndex);
     super.initState();
   }
@@ -219,6 +199,59 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
 
     setState(() {
       _initialPosition = LatLng(position.latitude, position.longitude);
+    });
+  }
+
+  /// Inits [Fluster] and all the markers with network images and updates the loading state.
+  void _initMarkers() async {
+
+    for (LatLng markerLocation in _markerLocations) {
+      final BitmapDescriptor markerImage =
+          await MapHelper.getMarkerImageFromUrl(_markerImageUrl);
+
+      markers.add(
+        MapMarker(
+          id: _markerLocations.indexOf(markerLocation).toString(),
+          position: markerLocation,
+          icon: markerImage,
+        ),
+      );
+    }
+
+    _clusterManager = (await MapHelper.initClusterManager(
+      markers,
+      _minClusterZoom,
+      _maxClusterZoom,
+    )) as Fluster<MapMarker>?;
+
+    await _updateMarkers();
+  }
+
+  Future<void> _updateMarkers([double? updatedZoom]) async {
+    if (_clusterManager == null || updatedZoom == _currentZoom) return;
+
+    if (updatedZoom != null) {
+      _currentZoom = updatedZoom;
+    }
+
+    setState(() {
+      _areMarkersLoading = true;
+    });
+
+    final updatedMarkers = await MapHelper.getClusterMarkers(
+      _clusterManager,
+      _currentZoom,
+      _clusterColor,
+      _clusterTextColor,
+      80,
+    );
+
+    _markers
+      ..clear()
+      ..addAll(updatedMarkers);
+
+    setState(() {
+      _areMarkersLoading = false;
     });
   }
 
@@ -285,11 +318,13 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
                       : "assets/json/mapstyle_dark.json",
                 ),
               );
+              _initMarkers();
             },
             initialCameraPosition: CameraPosition(
               target: _initialPosition as LatLng,
               zoom: widget.zoom,
             ),
+             onCameraMove: (position) => _updateMarkers(position.zoom),
           );
         },
       ),
