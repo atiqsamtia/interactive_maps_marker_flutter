@@ -149,9 +149,9 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
     final Fluster<MapMarker> fluster = Fluster<MapMarker>(
         minZoom: 0,
         maxZoom: 21,
-        radius: 150,
-        extent: 4096,
-        nodeSize: 64,
+        radius: 150 ~/ 2,
+        extent: 2048,
+        nodeSize: 32,
         points: markers,
         createCluster:
             (BaseCluster? cluster, double? longitude, double? latitude) {
