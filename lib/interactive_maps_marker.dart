@@ -306,7 +306,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
           print('Values changed');
           return GoogleMap(
             zoomControlsEnabled: false,
-            markers: googleMarkers.toSet(),
+            markers: _markers,
             myLocationEnabled: true,
             myLocationButtonEnabled: false,
             onMapCreated: (GoogleMapController controller) async {
