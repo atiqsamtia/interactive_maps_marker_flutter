@@ -130,20 +130,20 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
 
   /// Color of the cluster text
   final Color _clusterTextColor = Colors.white;
-    final List<MapMarker> markers = [];
+  final List<MapMarker> markers = [];
 
   /// Example marker coordinates
   final List<LatLng> _markerLocations = [
-    LatLng(41.147125, -8.611249),
-    LatLng(41.145599, -8.610691),
-    LatLng(41.145645, -8.614761),
-    LatLng(41.146775, -8.614913),
-    LatLng(41.146982, -8.615682),
-    LatLng(41.140558, -8.611530),
-    LatLng(41.138393, -8.608642),
-    LatLng(41.137860, -8.609211),
-    LatLng(41.138344, -8.611236),
-    LatLng(41.139813, -8.609381),
+    LatLng(36.860832, 10.253826),
+    LatLng(36.837446, 10.177410),
+    LatLng(36.813458, 10.133916),
+    LatLng(36.80324799649396, 10.178795859199756),
+    LatLng(36.84867719670467, 10.173551048840771),
+    LatLng(36.83304905048471, 10.23132067865196),
+    LatLng(36.85052619143521, 10.27096510507772),
+    LatLng(36.453724423821065, 10.741209233267941),
+    LatLng(36.44834969677488, 10.736808809719832),
+    LatLng(36.419724494437965, 10.665472609479401),
   ];
 
   @override
@@ -204,7 +204,6 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
 
   /// Inits [Fluster] and all the markers with network images and updates the loading state.
   void _initMarkers() async {
-
     for (LatLng markerLocation in _markerLocations) {
       final BitmapDescriptor markerImage =
           await MapHelper.getMarkerImageFromUrl(_markerImageUrl);
@@ -324,7 +323,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
               target: _initialPosition as LatLng,
               zoom: widget.zoom,
             ),
-             onCameraMove: (position) => _updateMarkers(position.zoom),
+            onCameraMove: (position) => _updateMarkers(position.zoom),
           );
         },
       ),
