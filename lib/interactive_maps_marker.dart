@@ -122,8 +122,11 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   bool _areMarkersLoading = true;
 
   /// Url image used on normal markers
-  final String _markerImageUrl =
-      'https://img.icons8.com/office/80/000000/marker.png';
+ /// Url image used on normal markers
+  final String _markerImageUrl = 'https://i.ibb.co/jZmy40R/marker.png';
+
+  final String _markerImageDarkUrl =
+      'https://i.ibb.co/TTnV65k/marker-darkmode.png';
 
   /// Color of the cluster circle
   final Color _clusterColor = Colors.blue;
@@ -205,9 +208,12 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   /// Inits [Fluster] and all the markers with network images and updates the loading state.
   void _initMarkers() async {
     for (LatLng markerLocation in _markerLocations) {
-      final BitmapDescriptor markerImage =
-          await MapHelper.getMarkerImageFromUrl(_markerImageUrl);
-
+     final BitmapDescriptor markerImage =
+          await MapHelper.getMarkerImageFromUrl(
+              Theme.of(context).brightness == Brightness.dark
+                  ? _markerImageDarkUrl
+                  : _markerImageUrl,
+              targetWidth: 80);
       markers.add(
         MapMarker(
           id: _markerLocations.indexOf(markerLocation).toString(),
@@ -264,16 +270,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
           children: <Widget>[
             _initialPosition != null
                 ? _buildMap()
-                : Container(
-                    child: Center(
-                      child: Text(
-                        'loading map..',
-                        style: TextStyle(
-                            fontFamily: 'Avenir-Medium',
-                            color: Colors.grey[400]),
-                      ),
-                    ),
-                  ),
+                : Center(child: CircularProgressIndicator()),
             Align(
               alignment: widget.contentAlignment,
               child: Padding(
