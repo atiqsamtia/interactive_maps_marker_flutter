@@ -314,7 +314,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
             zoomControlsEnabled: false,
             markers: _markers,
             myLocationEnabled: true,
-            myLocationButtonEnabled: false,
+            myLocationButtonEnabled: true,
             onMapCreated: (GoogleMapController controller) async {
               mapController = controller;
               await mapController?.setMapStyle(
