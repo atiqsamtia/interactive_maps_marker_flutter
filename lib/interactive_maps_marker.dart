@@ -216,6 +216,16 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
               targetWidth: 80);
       markers.add(
         MapMarker(
+          onTap: () {
+            int tappedIndex =
+                widget.items.indexWhere((element) => element.id == _markerLocations.indexOf(markerLocation));
+            pageController.animateToPage(
+              tappedIndex,
+              duration: Duration(milliseconds: 300),
+              curve: Curves.bounceInOut,
+            );
+            _pageChanged(tappedIndex);
+          },
           id: _markerLocations.indexOf(markerLocation).toString(),
           position: markerLocation,
           icon: markerImage,
