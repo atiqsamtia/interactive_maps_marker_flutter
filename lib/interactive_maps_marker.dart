@@ -217,8 +217,8 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
       markers.add(
         MapMarker(
           onTap: () {
-            int tappedIndex =
-                widget.items.indexWhere((element) => element.id == _markerLocations.indexOf(markerLocation));
+            int tappedIndex = widget.items.indexWhere((element) =>
+                element.id == _markerLocations.indexOf(markerLocation));
             pageController.animateToPage(
               tappedIndex,
               duration: Duration(milliseconds: 300),
@@ -315,6 +315,9 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
             markers: _markers,
             myLocationEnabled: true,
             myLocationButtonEnabled: true,
+            padding: EdgeInsets.only(
+              top: 40.0,
+            ),
             onMapCreated: (GoogleMapController controller) async {
               mapController = controller;
               await mapController?.setMapStyle(
