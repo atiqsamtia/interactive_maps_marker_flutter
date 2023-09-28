@@ -18,11 +18,9 @@ import 'helpers/map_marker.dart';
 
 class MarkerItem {
   int id;
-  double latitude;
-  double longitude;
+  LatLng location;
 
-  MarkerItem(
-      {required this.id, required this.latitude, required this.longitude});
+  MarkerItem({required this.id, required this.location});
 }
 
 class InteractiveMapsMarker extends StatefulWidget {
