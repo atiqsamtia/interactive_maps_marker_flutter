@@ -132,6 +132,8 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   /// Color of the cluster text
   final Color _clusterTextColor = Colors.white;
   final List<MapMarker> markers = [];
+  late List<LatLng> newMarkerPostions =
+      widget.items.map((e) => e.location).toList();
 
   /// Example marker coordinates
   final List<LatLng> _markerLocations = [
@@ -205,8 +207,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
 
   /// Inits [Fluster] and all the markers with network images and updates the loading state.
   void _initMarkers() async {
-    for (LatLng markerLocation
-        in widget.items.map((e) => e.location).toList()) {
+    for (LatLng markerLocation in newMarkerPostions) {
       final BitmapDescriptor markerImage =
           await MapHelper.getMarkerImageFromUrl(
               Theme.of(context).brightness == Brightness.dark
@@ -216,8 +217,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
       markers.add(
         MapMarker(
           onTap: () {
-            int tappedIndex = widget.items.indexWhere((element) =>
-                element.id == widget.items.map((e) => e.location).toList().indexOf(markerLocation));
+            int tappedIndex = newMarkerPostions.indexOf(markerLocation);
             pageController.animateToPage(
               tappedIndex,
               duration: Duration(milliseconds: 300),
@@ -225,7 +225,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
             );
             _pageChanged(tappedIndex);
           },
-          id: widget.items.map((e) => e.location).toList().indexOf(markerLocation).toString(),
+          id: newMarkerPostions.indexOf(markerLocation).toString(),
           position: markerLocation,
           icon: markerImage,
         ),
@@ -332,7 +332,10 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
               target: _initialPosition as LatLng,
               zoom: widget.zoom,
             ),
-            onCameraMove: (position) => _updateMarkers(position.zoom),
+            onCameraMove: (position) => {
+              _updateMarkers(position.zoom),
+              if (position.zoom > 10) {newMarkerPostions = _markerLocations}
+            },
           );
         },
       ),
