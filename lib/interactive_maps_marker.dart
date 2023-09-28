@@ -150,9 +150,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   @override
   void initState() {
     _getUserLocation();
-    var markerLocationsNew =
-        widget.items.map((location) => location).cast<LatLng>().toList();
-    print(markerLocationsNew);
+
     rebuildMarkers(currentIndex);
     super.initState();
   }
@@ -207,7 +205,8 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
 
   /// Inits [Fluster] and all the markers with network images and updates the loading state.
   void _initMarkers() async {
-    for (LatLng markerLocation in _markerLocations) {
+    for (LatLng markerLocation
+        in widget.items.map((e) => e.location).toList()) {
       final BitmapDescriptor markerImage =
           await MapHelper.getMarkerImageFromUrl(
               Theme.of(context).brightness == Brightness.dark
@@ -218,7 +217,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
         MapMarker(
           onTap: () {
             int tappedIndex = widget.items.indexWhere((element) =>
-                element.id == _markerLocations.indexOf(markerLocation));
+                element.id == widget.items.map((e) => e.location).toList().indexOf(markerLocation));
             pageController.animateToPage(
               tappedIndex,
               duration: Duration(milliseconds: 300),
@@ -226,7 +225,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
             );
             _pageChanged(tappedIndex);
           },
-          id: _markerLocations.indexOf(markerLocation).toString(),
+          id: widget.items.map((e) => e.location).toList().indexOf(markerLocation).toString(),
           position: markerLocation,
           icon: markerImage,
         ),
