@@ -334,8 +334,6 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
             ),
             onCameraMove: (position) => {
               _updateMarkers(position.zoom),
-              if (position.zoom > 10)
-                {newMarkerPostions = _markerLocations, _updateMarkers()}
             },
           );
         },
