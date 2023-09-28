@@ -150,7 +150,9 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   @override
   void initState() {
     _getUserLocation();
-
+    var markerLocationsNew =
+        widget.items.map((location) => location).cast<LatLng>().toList();
+    print(markerLocationsNew);
     rebuildMarkers(currentIndex);
     super.initState();
   }
