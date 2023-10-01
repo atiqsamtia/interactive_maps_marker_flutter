@@ -20,8 +20,8 @@ import 'helpers/map_marker.dart';
 class MarkerItem {
   int id;
   LatLng location;
-
-  MarkerItem({required this.id, required this.location});
+  String ville;
+  MarkerItem({required this.id, required this.location, required this.ville});
 }
 
 class InteractiveMapsMarker extends StatefulWidget {
@@ -134,8 +134,10 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   /// Color of the cluster text
   final Color _clusterTextColor = Colors.white;
   final List<MapMarker> markers = [];
+
+  List<MarkerItem> NewFilteredMarkerPositions = [];
   late List<LatLng> newMarkerPostions =
-      widget.items.map((e) => e.location).toList();
+      NewFilteredMarkerPositions.map((e) => e.location).toList();
 
   /// Example marker coordinates
   final List<LatLng> _markerLocations = [
@@ -205,9 +207,13 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
       position.latitude,
       position.longitude,
     );
+
     print(placemarks[0]);
     setState(() {
       _initialPosition = LatLng(position.latitude, position.longitude);
+      NewFilteredMarkerPositions = widget.items
+          .where((element) => element.ville == placemarks[0].locality)
+          .toList();
     });
   }
 
