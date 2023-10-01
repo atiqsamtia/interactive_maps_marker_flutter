@@ -37,7 +37,7 @@ class InteractiveMapsMarker extends StatefulWidget {
   final IndexedWidgetBuilder? itemBuilder;
   final EdgeInsetsGeometry itemPadding;
   final Alignment contentAlignment;
-
+  final LatLng? initialPositionFromlist;
   InteractiveMapsController? controller;
   VoidCallback? onLastItem;
 
@@ -54,6 +54,7 @@ class InteractiveMapsMarker extends StatefulWidget {
     this.contentAlignment = Alignment.bottomCenter,
     this.controller,
     this.onLastItem,
+    this.initialPositionFromlist,
   }) {
     if (itemBuilder == null && itemContent == null) {
       throw Exception('itemBuilder or itemContent must be provided');
@@ -329,7 +330,8 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
               _initMarkers();
             },
             initialCameraPosition: CameraPosition(
-              target: _initialPosition as LatLng,
+              target:
+                  widget.initialPositionFromlist ?? _initialPosition as LatLng,
               zoom: widget.zoom,
             ),
             onCameraMove: (position) => {
