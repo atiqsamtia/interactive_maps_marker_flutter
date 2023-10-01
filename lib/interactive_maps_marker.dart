@@ -330,8 +330,9 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
               _initMarkers();
             },
             initialCameraPosition: CameraPosition(
-              target:
-                  widget.initialPositionFromlist ?? _initialPosition as LatLng,
+              target: widget.initialPositionFromlist != null
+                  ? _initialPosition as LatLng
+                  : widget.initialPositionFromlist as LatLng,
               zoom: widget.zoom,
             ),
             onCameraMove: (position) => {
