@@ -7,6 +7,7 @@ import 'package:fluster/fluster.dart';
 import "package:flutter/material.dart";
 import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:interactive_maps_marker/interactive_maps_controller.dart';
 export 'package:interactive_maps_marker/interactive_maps_controller.dart';
@@ -200,7 +201,11 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
     var position = await GeolocatorPlatform.instance.getCurrentPosition(
         locationSettings: const LocationSettings(
             accuracy: LocationAccuracy.bestForNavigation));
-
+    List<Placemark> placemarks = await placemarkFromCoordinates(
+      position.latitude,
+      position.longitude,
+    );
+    print(placemarks[0]);
     setState(() {
       _initialPosition = LatLng(position.latitude, position.longitude);
     });
