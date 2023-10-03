@@ -23,3 +23,5 @@ dev_dependencies:
 flutter:
   assets:
     - assets/
+    - assets/marker.png
+    - assets/marker_darkmode.png
