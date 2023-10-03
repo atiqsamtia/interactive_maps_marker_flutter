@@ -5,6 +5,7 @@ import 'dart:ui';
 
 import 'package:fluster/fluster.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -21,13 +22,13 @@ class MapHelper {
   /// time to download the file and set the marker image.
   ///
   /// You can resize the marker image by providing a [targetWidth].
-  static Future<BitmapDescriptor> getMarkerImageFromUrl(
-    String url, {
+  static Future<BitmapDescriptor> getMarkerImageFromAsset(
+    String assetPath, {
     int? targetWidth,
   }) async {
-    final File markerImageFile = await DefaultCacheManager().getSingleFile(url);
-
-    Uint8List markerImageBytes = await markerImageFile.readAsBytes();
+    // Load the image asset from the project folder
+    final ByteData data = await rootBundle.load(assetPath);
+    Uint8List markerImageBytes = data.buffer.asUint8List();
 
     if (targetWidth != null) {
       markerImageBytes = await _resizeImageBytes(

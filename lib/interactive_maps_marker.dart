@@ -124,10 +124,10 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
 
   /// Url image used on normal markers
   /// Url image used on normal markers
-  final String _markerImageUrl = 'https://i.ibb.co/jZmy40R/marker.png';
+  final String _markerImageUrl = 'assets/marker.png';
 
   final String _markerImageDarkUrl =
-      'https://i.ibb.co/TTnV65k/marker-darkmode.png';
+      'assets/marker_darkmode.png';
 
   /// Color of the cluster circle
   final Color _clusterColor = Color(0xFFff5f5f);
@@ -226,7 +226,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   void _initMarkers() async {
     for (LatLng markerLocation in newMarkerPostions) {
       final BitmapDescriptor markerImage =
-          await MapHelper.getMarkerImageFromUrl(
+          await MapHelper.getMarkerImageFromAsset(
               Theme.of(context).brightness == Brightness.dark
                   ? _markerImageDarkUrl
                   : _markerImageUrl,
