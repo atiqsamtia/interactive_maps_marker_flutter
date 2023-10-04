@@ -136,9 +136,8 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   final Color _clusterTextColor = Colors.white;
   final List<MapMarker> markers = [];
 
-  List<MarkerItem> NewFilteredMarkerPositions = [];
   late List<LatLng> newMarkerPostions =
-      NewFilteredMarkerPositions.map((e) => e.location).toList();
+      widget.items.map((e) => e.location).toList();
 
   /// Example marker coordinates
   final List<LatLng> _markerLocations = [
@@ -156,8 +155,8 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
 
   @override
   void initState() {
-    _getUserLocation();
-
+/*     _getUserLocation();
+ */
     rebuildMarkers(currentIndex);
     super.initState();
   }
@@ -168,7 +167,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
     super.didChangeDependencies();
   }
 
-  Future<bool> _handleLocationPermission() async {
+/*   Future<bool> _handleLocationPermission() async {
     bool serviceEnabled;
     LocationPermission permission;
 
@@ -195,9 +194,9 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
       return false;
     }
     return true;
-  }
+  } */
 
-  void _getUserLocation() async {
+/*   void _getUserLocation() async {
     final hasPermission = await _handleLocationPermission();
 
     if (!hasPermission) return;
@@ -220,7 +219,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
               .where((element) => element.ville == placemarks[0].locality)
               .toList();
     });
-  }
+  } */
 
   /// Inits [Fluster] and all the markers with network images and updates the loading state.
   void _initMarkers() async {
