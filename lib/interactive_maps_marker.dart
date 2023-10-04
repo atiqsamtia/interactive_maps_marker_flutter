@@ -124,7 +124,8 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
 
   /// Url image used on normal markers
   /// Url image used on normal markers
-  final String _markerImageUrl = 'packages/interactive_maps_marker/assets/marker.png';
+  final String _markerImageUrl =
+      'packages/interactive_maps_marker/assets/marker.png';
 
   final String _markerImageDarkUrl =
       'packages/interactive_maps_marker/assets/marker_darkmode.png';
@@ -293,9 +294,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
       builder: (context, snapshot) {
         return Stack(
           children: <Widget>[
-            _initialPosition != null
-                ? _buildMap()
-                : Center(child: CircularProgressIndicator()),
+            _buildMap(),
             Align(
               alignment: widget.contentAlignment,
               child: Padding(
