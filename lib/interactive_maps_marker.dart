@@ -124,10 +124,10 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
 
   /// Url image used on normal markers
   /// Url image used on normal markers
-  final String _markerImageUrl = 'assets/marker.png';
+  final String _markerImageUrl = 'packages/interactive_maps_marker/assets/marker.png';
 
   final String _markerImageDarkUrl =
-      'assets/marker_darkmode.png';
+      'packages/interactive_maps_marker/assets/marker_darkmode.png';
 
   /// Color of the cluster circle
   final Color _clusterColor = Color(0xFFff5f5f);
