@@ -137,34 +137,25 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   final Color _clusterTextColor = Colors.white;
   final List<MapMarker> markers = [];
 
-  late List<LatLng> newMarkerPostions =
-      widget.items.map((e) => e.location).toList();
-
-  /// Example marker coordinates
-  final List<LatLng> _markerLocations = [
-    LatLng(36.860832, 10.253826),
-    LatLng(36.837446, 10.177410),
-    LatLng(36.813458, 10.133916),
-    LatLng(36.80324799649396, 10.178795859199756),
-    LatLng(36.84867719670467, 10.173551048840771),
-    LatLng(36.83304905048471, 10.23132067865196),
-    LatLng(36.85052619143521, 10.27096510507772),
-    LatLng(36.453724423821065, 10.741209233267941),
-    LatLng(36.44834969677488, 10.736808809719832),
-    LatLng(36.419724494437965, 10.665472609479401),
-  ];
+  late List<LatLng> newMarkerPostions = [];
 
   @override
   void initState() {
 /*     _getUserLocation();
  */
-    rebuildMarkers(currentIndex);
+    newMarkerPostions = widget.items.map((e) => e.location).toList();
+    print("toul el lista initial" + widget.items.toString());
+
+    print("toul el lista" + newMarkerPostions.toString());
+/*     rebuildMarkers(currentIndex);
+ */
     super.initState();
   }
 
   @override
   void didChangeDependencies() {
-    rebuildMarkers(currentIndex);
+/*     rebuildMarkers(currentIndex);
+ */
     super.didChangeDependencies();
   }
 
@@ -346,7 +337,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
             initialCameraPosition: CameraPosition(
               target: widget.initialPositionFromlist != null
                   ? widget.initialPositionFromlist as LatLng
-                  : _initialPosition as LatLng,
+                  : widget.initialPositionFromlist as LatLng,
               zoom: widget.zoom,
             ),
             onCameraMove: (position) => {
