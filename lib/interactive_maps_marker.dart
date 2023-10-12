@@ -36,16 +36,19 @@ class InteractiveMapsMarker extends StatefulWidget {
   final IndexedWidgetBuilder? itemContent;
 
   final IndexedWidgetBuilder? itemBuilder;
+  final IndexedWidgetBuilder? restItemBuilder;
   final EdgeInsetsGeometry itemPadding;
   final Alignment contentAlignment;
   final LatLng? initialPositionFromlist;
   final String? filteredCity;
   InteractiveMapsController? controller;
   VoidCallback? onLastItem;
-
+  final List<int?> keys;
+  final List<int?> remainingKeys;
   InteractiveMapsMarker(
       {required this.items,
       this.itemBuilder,
+      this.restItemBuilder,
       this.center = const LatLng(0.0, 0.0),
       this.itemContent,
       this.itemHeight = 116,
@@ -56,6 +59,8 @@ class InteractiveMapsMarker extends StatefulWidget {
       this.contentAlignment = Alignment.bottomCenter,
       this.controller,
       this.onLastItem,
+      required this.keys,
+      required this.remainingKeys,
       this.initialPositionFromlist,
       this.filteredCity}) {
     if (itemBuilder == null && itemContent == null) {
@@ -121,6 +126,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
 
   /// Markers loading flag
   bool _areMarkersLoading = true;
+  bool setFromSameCity = false;
 
   /// Url image used on normal markers
   /// Url image used on normal markers
@@ -137,16 +143,22 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   final Color _clusterTextColor = Colors.white;
   final List<MapMarker> markers = [];
 
-  late List<LatLng> newMarkerPostions = [];
+  Map<int, int> indexMapping = {};
+  Map<int, int> indexMappingRemaining = {};
 
+  late List<LatLng> newMarkerPostions = [];
+  late int? originalIndex = null;
   @override
   void initState() {
 /*     _getUserLocation();
  */
     newMarkerPostions = widget.items.map((e) => e.location).toList();
     print("toul el lista initial" + widget.items.toString());
-
-    print("toul el lista" + newMarkerPostions.toString());
+    indexMapping = Map.fromIterable(widget.keys,
+        key: (item) => widget.keys.indexOf(item), value: (item) => item);
+    indexMappingRemaining = Map.fromIterable(widget.remainingKeys,
+        key: (item) => widget.remainingKeys.indexOf(item),
+        value: (item) => item);
 /*     rebuildMarkers(currentIndex);
  */
     super.initState();
@@ -212,6 +224,14 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
               .toList();
     });
   } */
+  int? getKeyForValue(Map<int, int> map, int targetValue) {
+    for (var entry in map.entries) {
+      if (entry.value == targetValue) {
+        return entry.key;
+      }
+    }
+    return null; // Return null if the value is not found.
+  }
 
   /// Inits [Fluster] and all the markers with network images and updates the loading state.
   void _initMarkers() async {
@@ -226,8 +246,16 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
         MapMarker(
           onTap: () {
             int tappedIndex = newMarkerPostions.indexOf(markerLocation);
+            originalIndex = getKeyForValue(indexMapping, tappedIndex);
+            setFromSameCity = true;
+            if (getKeyForValue(indexMapping, tappedIndex) == null) {
+              originalIndex =
+                  getKeyForValue(indexMappingRemaining, tappedIndex);
+              setFromSameCity = false;
+            }
+
             pageController.animateToPage(
-              tappedIndex,
+              originalIndex!,
               duration: Duration(milliseconds: 300),
               curve: Curves.bounceInOut,
             );
@@ -293,12 +321,22 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
                 child: SizedBox(
                   height: widget.itemHeight,
                   child: PageView.builder(
-                    itemCount: widget.items.length,
+                    itemCount: originalIndex != null && !setFromSameCity
+                        ? indexMappingRemaining.length
+                        : indexMapping.length,
                     controller: pageController,
-                    onPageChanged: _pageChanged,
-                    itemBuilder: widget.itemBuilder != null
-                        ? widget.itemBuilder!
-                        : _buildItem,
+                    onPageChanged: (int pageIndex) {
+                      print("called on page change" + pageIndex.toString());
+                      final NeworiginalIndex = originalIndex != null && !setFromSameCity
+                          ? indexMappingRemaining[pageIndex]
+                          : indexMapping[pageIndex];
+                      if (NeworiginalIndex != null) {
+                        _pageChanged(NeworiginalIndex);
+                      }
+                    },
+                    itemBuilder: originalIndex != null && !setFromSameCity
+                        ? widget.restItemBuilder!
+                        : widget.itemBuilder!,
                   ),
                 ),
               ),
@@ -380,7 +418,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
       }
       rebuildMarkers(index);
       Marker marker = markers.elementAt(index).toMarker();
-
+      print("index ali taapta" + index.toString());
       mapController
           ?.animateCamera(
         widget.zoomKeepOnTap
@@ -392,7 +430,13 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
               ),
       )
           .then((val) {
-        setState(() {});
+        setState(() {
+          /*  pageController.animateToPage(
+            index,
+            duration: Duration(milliseconds: 300),
+            curve: Curves.bounceInOut,
+          ); */
+        });
       });
     } catch (e) {
       print(e);
