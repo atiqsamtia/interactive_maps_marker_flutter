@@ -1,22 +1,17 @@
 library interactive_maps_marker; // interactive_marker_list
 
 import 'dart:async';
-import 'dart:ui' as ui;
 
 import 'package:fluster/fluster.dart';
 import "package:flutter/material.dart";
-import 'package:flutter/scheduler.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:interactive_maps_marker/interactive_maps_controller.dart';
 export 'package:interactive_maps_marker/interactive_maps_controller.dart';
-import 'package:geolocator/geolocator.dart';
 
-import './utils.dart';
 import 'helpers/map_helper.dart';
 import 'helpers/map_marker.dart';
+import 'package:maps_toolkit/maps_toolkit.dart' as mp;
 
 class MarkerItem {
   int id;
@@ -133,9 +128,14 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   /// Color of the cluster text
   final Color _clusterTextColor = Colors.white;
   final List<MapMarker> markers = [];
-
   Map<int, int> indexMapping = {};
   Map<int, int> indexMappingRemaining = {};
+  List<mp.LatLng> polygonPoints = [
+    mp.LatLng(36.53, 10.33),
+    mp.LatLng(36.92, 10.96),
+    mp.LatLng(36.66, 11.32),
+    mp.LatLng(36.34, 10.56),
+  ];
 
   late List<LatLng> newMarkerPostions = [];
   late int? originalIndex = null;
@@ -243,6 +243,12 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
     });
   }
 
+  bool isInPolygon(LatLng point) {
+    final pointMp = mp.LatLng(point.latitude, point.longitude);
+
+    return mp.PolygonUtil.containsLocation(pointMp, polygonPoints, false);
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<int?>(
@@ -317,6 +323,10 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
               zoom: widget.zoom,
             ),
             onCameraMove: (position) => {
+              isInPolygon(position.target),
+              print(
+                "Fi nabeul ? " + isInPolygon(position.target).toString(),
+              ),
               _updateMarkers(position.zoom),
             },
           );
