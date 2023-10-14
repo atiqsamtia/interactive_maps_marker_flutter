@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 
 import 'package:fluster/fluster.dart';
 import "package:flutter/material.dart";
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:geocoding/geocoding.dart';
@@ -66,18 +67,7 @@ class InteractiveMapsMarker extends StatefulWidget {
     if (itemBuilder == null && itemContent == null) {
       throw Exception('itemBuilder or itemContent must be provided');
     }
-/*     readIcons();
- */
   }
-
-  /* void readIcons() async {
-    if (markerIcon == null)
-      markerIcon = await getBytesFromAsset(
-          'packages/interactive_maps_marker/assets/marker.png', 100);
-    if (markerIconSelected == null)
-      markerIconSelected = await getBytesFromAsset(
-          'packages/interactive_maps_marker/assets/marker_selected.png', 100);
-  } */
 
   Uint8List? markerIcon;
   Uint8List? markerIconSelected;
@@ -127,6 +117,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   /// Markers loading flag
   bool _areMarkersLoading = true;
   bool setFromSameCity = false;
+  bool markerTapped = false;
 
   /// Url image used on normal markers
   /// Url image used on normal markers
@@ -150,80 +141,20 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   late int? originalIndex = null;
   @override
   void initState() {
-/*     _getUserLocation();
- */
     newMarkerPostions = widget.items.map((e) => e.location).toList();
-    print("toul el lista initial" + widget.items.toString());
     indexMapping = Map.fromIterable(widget.keys,
         key: (item) => widget.keys.indexOf(item), value: (item) => item);
     indexMappingRemaining = Map.fromIterable(widget.remainingKeys,
         key: (item) => widget.remainingKeys.indexOf(item),
         value: (item) => item);
-/*     rebuildMarkers(currentIndex);
- */
     super.initState();
   }
 
   @override
   void didChangeDependencies() {
-/*     rebuildMarkers(currentIndex);
- */
     super.didChangeDependencies();
   }
 
-/*   Future<bool> _handleLocationPermission() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text(
-              'Location services are disabled. Please enable the services')));
-      return false;
-    }
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Location permissions are denied')));
-        return false;
-      }
-    }
-    if (permission == LocationPermission.deniedForever) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text(
-              'Location permissions are permanently denied, we cannot request permissions.')));
-      return false;
-    }
-    return true;
-  } */
-
-/*   void _getUserLocation() async {
-    final hasPermission = await _handleLocationPermission();
-
-    if (!hasPermission) return;
-    var position = await GeolocatorPlatform.instance.getCurrentPosition(
-        locationSettings: const LocationSettings(
-            accuracy: LocationAccuracy.bestForNavigation));
-    List<Placemark> placemarks = await placemarkFromCoordinates(
-      position.latitude,
-      position.longitude,
-    );
-
-    print(placemarks[0]);
-    setState(() {
-      _initialPosition = LatLng(position.latitude, position.longitude);
-      NewFilteredMarkerPositions = widget.filteredCity != null
-          ? widget.items
-              .where((element) => element.ville == widget.filteredCity)
-              .toList()
-          : widget.items
-              .where((element) => element.ville == placemarks[0].locality)
-              .toList();
-    });
-  } */
   int? getKeyForValue(Map<int, int> map, int targetValue) {
     for (var entry in map.entries) {
       if (entry.value == targetValue) {
@@ -248,18 +179,22 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
             int tappedIndex = newMarkerPostions.indexOf(markerLocation);
             originalIndex = getKeyForValue(indexMapping, tappedIndex);
             setFromSameCity = true;
+            setState(() {
+              markerTapped = true;
+            });
             if (getKeyForValue(indexMapping, tappedIndex) == null) {
               originalIndex =
                   getKeyForValue(indexMappingRemaining, tappedIndex);
               setFromSameCity = false;
             }
-
-            pageController.animateToPage(
-              originalIndex!,
-              duration: Duration(milliseconds: 300),
-              curve: Curves.bounceInOut,
-            );
-            _pageChanged(tappedIndex);
+            if (_currentZoom > 10) {
+              pageController.animateToPage(
+                originalIndex!,
+                duration: Duration(milliseconds: 500),
+                curve: Curves.bounceInOut,
+              );
+            }
+            _pageChanged(tappedIndex!);
           },
           id: newMarkerPostions.indexOf(markerLocation).toString(),
           position: markerLocation,
@@ -279,6 +214,10 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
 
   Future<void> _updateMarkers([double? updatedZoom]) async {
     if (_clusterManager == null || updatedZoom == _currentZoom) return;
+    if (_currentZoom <= 10) {
+      markerTapped = false;
+    } else
+      markerTapped = true;
 
     if (updatedZoom != null) {
       _currentZoom = updatedZoom;
@@ -295,7 +234,6 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
       _clusterTextColor,
       80,
     );
-
     _markers
       ..clear()
       ..addAll(updatedMarkers);
@@ -320,24 +258,25 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
                 padding: widget.itemPadding,
                 child: SizedBox(
                   height: widget.itemHeight,
-                  child: PageView.builder(
-                    itemCount: originalIndex != null && !setFromSameCity
-                        ? indexMappingRemaining.length
-                        : indexMapping.length,
-                    controller: pageController,
-                    onPageChanged: (int pageIndex) {
-                      print("called on page change" + pageIndex.toString());
-                      final NeworiginalIndex = originalIndex != null && !setFromSameCity
-                          ? indexMappingRemaining[pageIndex]
-                          : indexMapping[pageIndex];
-                      if (NeworiginalIndex != null) {
-                        _pageChanged(NeworiginalIndex);
-                      }
-                    },
-                    itemBuilder: originalIndex != null && !setFromSameCity
-                        ? widget.restItemBuilder!
-                        : widget.itemBuilder!,
-                  ),
+                  child: markerTapped
+                      ? PageView.builder(
+                          itemCount: originalIndex != null && !setFromSameCity
+                              ? indexMappingRemaining.length
+                              : indexMapping.length,
+                          controller: pageController,
+                          onPageChanged: (int pageIndex) {
+                            final NeworiginalIndex =
+                                originalIndex != null && !setFromSameCity
+                                    ? indexMappingRemaining[pageIndex]
+                                    : indexMapping[pageIndex];
+                            if (NeworiginalIndex != null) {
+                              _pageChanged(NeworiginalIndex);
+                            }
+                          },
+                          itemBuilder: originalIndex != null && !setFromSameCity
+                              ? widget.restItemBuilder!
+                              : widget.itemBuilder!)
+                      : SizedBox.shrink(),
                 ),
               ),
             )
@@ -352,7 +291,6 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
       child: ValueListenableBuilder(
         valueListenable: selectedMarker,
         builder: (context, value, child) {
-          print('Values changed');
           return GoogleMap(
             zoomControlsEnabled: false,
             markers: _markers,
@@ -387,38 +325,22 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
     );
   }
 
-  Widget? _buildItem(BuildContext context, int i) {
-    return Transform.scale(
-      scale: i == currentIndex ? 1 : 0.9,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(10.0),
-        child: Container(
-          height: widget.itemHeight,
-          decoration: BoxDecoration(
-            color: Color(0xffffffff),
-            boxShadow: [
-              BoxShadow(
-                offset: Offset(0.5, 0.5),
-                color: Color(0xff000000).withOpacity(0.12),
-                blurRadius: 20,
-              ),
-            ],
-          ),
-          child: widget.itemContent!(context, i),
-        ),
-      ),
-    );
-  }
-
   void _pageChanged(int index) {
     try {
       setState(() => currentIndex = index);
       if (widget.onLastItem != null && index == widget.items.length - 1) {
         widget.onLastItem!();
       }
-      rebuildMarkers(index);
       Marker marker = markers.elementAt(index).toMarker();
-      print("index ali taapta" + index.toString());
+      if (_currentZoom <= 10) {
+        Future.delayed(Duration(milliseconds: 500), () {
+          pageController.animateToPage(
+            index,
+            duration: Duration(milliseconds: 500),
+            curve: Curves.bounceInOut,
+          );
+        });
+      }
       mapController
           ?.animateCamera(
         widget.zoomKeepOnTap
@@ -430,93 +352,10 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
               ),
       )
           .then((val) {
-        setState(() {
-          /*  pageController.animateToPage(
-            index,
-            duration: Duration(milliseconds: 300),
-            curve: Curves.bounceInOut,
-          ); */
-        });
+        setState(() {});
       });
     } catch (e) {
       print(e);
     }
-  }
-
-  /*  Future<Uint8List> getBytesFromAsset(String path, int width) async {
-    ByteData data = await rootBundle.load(path);
-    ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(),
-        targetWidth: width);
-    ui.FrameInfo fi = await codec.getNextFrame();
-    return (await fi.image.toByteData(format: ui.ImageByteFormat.png))!
-        .buffer
-        .asUint8List();
-  } */
-
-  Future<void> rebuildMarkers(int index) async {
-    if (widget.items.length == 0) return;
-    int current = widget.items[index].id;
-
-    Set<Marker> _markers = Set<Marker>();
-    if (widget.markerIcon == null)
-      widget.markerIcon = await getBytesFromAsset(
-          'packages/interactive_maps_marker/assets/marker.png', 100);
-    if (widget.markerIconSelected == null)
-      widget.markerIconSelected = await getBytesFromAsset(
-          'packages/interactive_maps_marker/assets/marker_selected.png', 100);
-    if (widget.markerIconDark == null)
-      widget.markerIconDark = await getBytesFromAsset(
-          'packages/interactive_maps_marker/assets/marker_darkmode.png', 100);
-    if (widget.markerIconSelectedDark == null)
-      widget.markerIconSelectedDark = await getBytesFromAsset(
-          'packages/interactive_maps_marker/assets/selectedMarker_darkmode.png',
-          100);
-/*     widget.items.forEach((item) async {
-      _markers.add(
-        Marker(
-          markerId: MarkerId(item.id.toString()),
-          position: LatLng(item.latitude, item.longitude),
-          onTap: () {
-            int tappedIndex =
-                widget.items.indexWhere((element) => element.id == item.id);
-            pageController.animateToPage(
-              tappedIndex,
-              duration: Duration(milliseconds: 300),
-              curve: Curves.bounceInOut,
-            );
-            _pageChanged(tappedIndex);
-          },
-          /* icon: BitmapDescriptor.defaultMarkerWithHue(item.id == current
-              ? BitmapDescriptor.hueGreen
-              : BitmapDescriptor.hueRed),
-          // */
-          icon: item.id == current
-              ? BitmapDescriptor.fromBytes(
-                  Theme.of(context).brightness != Brightness.dark
-                      ? widget.markerIconSelected as Uint8List
-                      : widget.markerIconSelectedDark as Uint8List)
-              : BitmapDescriptor.fromBytes(
-                  Theme.of(context).brightness != Brightness.dark
-                      ? widget.markerIcon as Uint8List
-                      : widget.markerIconDark as Uint8List),
-        ),
-      );
-    });
-
-    setState(() {
-      markers = _markers;
-    }); */
-    // selectedMarker.value = current;
-    selectedMarker.value = current;
-    // selectedMarker.notifyListeners();
-  }
-
-  void setIndex(int index) {
-    pageController.animateToPage(
-      index,
-      duration: Duration(milliseconds: 300),
-      curve: Curves.bounceInOut,
-    );
-    _pageChanged(index);
   }
 }
