@@ -37,6 +37,8 @@ class InteractiveMapsMarker extends StatefulWidget {
   final Alignment contentAlignment;
   final LatLng? initialPositionFromlist;
   final String? filteredCity;
+  final Function(dynamic) onValueReceived;
+
   InteractiveMapsController? controller;
   VoidCallback? onLastItem;
   final List<int?> keys;
@@ -44,6 +46,7 @@ class InteractiveMapsMarker extends StatefulWidget {
   InteractiveMapsMarker(
       {required this.items,
       this.itemBuilder,
+      required this.onValueReceived,
       this.restItemBuilder,
       this.center = const LatLng(0.0, 0.0),
       this.itemContent,
@@ -62,6 +65,9 @@ class InteractiveMapsMarker extends StatefulWidget {
     if (itemBuilder == null && itemContent == null) {
       throw Exception('itemBuilder or itemContent must be provided');
     }
+  }
+  void sendValueToParent(dynamic data) {
+    onValueReceived(data);
   }
 
   Uint8List? markerIcon;
@@ -113,6 +119,8 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   bool _areMarkersLoading = true;
   bool setFromSameCity = false;
   bool markerTapped = false;
+  bool showDetailsNabeul = false;
+  bool showDetailsTunis = false;
 
   /// Url image used on normal markers
   /// Url image used on normal markers
@@ -135,6 +143,12 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
     mp.LatLng(36.92, 10.96),
     mp.LatLng(36.66, 11.32),
     mp.LatLng(36.34, 10.56),
+  ];
+  List<mp.LatLng> polygonPointsTunis = [
+    mp.LatLng(36.93, 10.04),
+    mp.LatLng(37.00, 10.32),
+    mp.LatLng(36.64, 10.15),
+    mp.LatLng(36.72, 10.43),
   ];
 
   late List<LatLng> newMarkerPostions = [];
@@ -243,7 +257,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
     });
   }
 
-  bool isInPolygon(LatLng point) {
+  bool isInPolygon(LatLng point, List<mp.LatLng> polygonPoints) {
     final pointMp = mp.LatLng(point.latitude, point.longitude);
 
     return mp.PolygonUtil.containsLocation(pointMp, polygonPoints, false);
@@ -264,7 +278,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
                 padding: widget.itemPadding,
                 child: SizedBox(
                   height: widget.itemHeight,
-                  child: markerTapped
+                  child: markerTapped && (showDetailsNabeul || showDetailsTunis)
                       ? PageView.builder(
                           itemCount: originalIndex != null && !setFromSameCity
                               ? indexMappingRemaining.length
@@ -323,10 +337,19 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
               zoom: widget.zoom,
             ),
             onCameraMove: (position) => {
-              isInPolygon(position.target),
-              print(
-                "Fi nabeul ? " + isInPolygon(position.target).toString(),
-              ),
+              setState(() {
+                showDetailsNabeul = isInPolygon(position.target, polygonPoints);
+                showDetailsTunis =
+                    isInPolygon(position.target, polygonPointsTunis);
+                if (showDetailsNabeul) {
+                  widget.sendValueToParent("Nabeul");
+                } else if (showDetailsTunis) {
+                  widget.sendValueToParent("Tunis");
+                } else {
+                  widget.sendValueToParent("");
+                }
+              }),
+              print(showDetailsTunis),
               _updateMarkers(position.zoom),
             },
           );
