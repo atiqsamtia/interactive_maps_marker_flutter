@@ -371,25 +371,8 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
                   // Update the previousCity
                   previousCity = city;
                 }
-
-                /*     if ((city == 'Nabeul' &&
-                        widget.originalCity == "Nabeul Governorate") ||
-                    (city == 'Tunis' &&
-                        widget.originalCity == "Tunis Governorate")) {
-                  print("hani hne ");
-                  setFromSameCity = true;
-                  originalIndex = 1;
-                } else
-                  setFromSameCity = false;
-                originalIndex = 1; */
               }),
               widget.sendValueToParent(city),
-              /*    widget.initialPositionFromlist != null
-                  ? mapController?.animateCamera(CameraUpdate.newLatLng(
-                      LatLng(widget.initialPositionFromlist!.latitude,
-                          widget.initialPositionFromlist!.longitude),
-                    ))
-                  : "", */
               _updateMarkers(position.zoom),
             },
           );
