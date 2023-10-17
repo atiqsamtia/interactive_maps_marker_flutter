@@ -46,7 +46,7 @@ class InteractiveMapsMarker extends StatefulWidget {
   final List<int?> remainingKeys;
   InteractiveMapsMarker(
       {required this.items,
-        Key? key,
+      Key? key,
       this.itemBuilder,
       required this.onValueReceived,
       this.restItemBuilder,
@@ -64,7 +64,8 @@ class InteractiveMapsMarker extends StatefulWidget {
       required this.remainingKeys,
       this.initialPositionFromlist,
       this.filteredCity,
-      this.originalCity}): super(key: key) {
+      this.originalCity})
+      : super(key: key) {
     if (itemBuilder == null && itemContent == null) {
       throw Exception('itemBuilder or itemContent must be provided');
     }
@@ -127,6 +128,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   bool isNabeul = false;
   bool isTunis = false;
   String city = "";
+  String previousCity = "";
 
   /// Url image used on normal markers
   /// Url image used on normal markers
@@ -343,23 +345,46 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
               zoom: widget.zoom,
             ),
             onCameraMove: (position) => {
-              isNabeul = isInPolygon(position.target, polygonPoints),
-              isTunis = isInPolygon(position.target, polygonPointsTunis),
-              city = isNabeul ? "Nabeul" : (isTunis ? "Tunis" : ""),
               setState(() {
+                isNabeul = isInPolygon(position.target, polygonPoints);
+                isTunis = isInPolygon(position.target, polygonPointsTunis);
+                city = isNabeul
+                    ? "Nabeul"
+                    : (isTunis ? "Tunis" : "different city");
+
                 showDetailsNabeul = isNabeul;
                 showDetailsTunis = isTunis;
-                if (city == 'Nabeul' &&
-                    widget.originalCity == "Nabeul Governorate") {
+                if (city != previousCity) {
+                  if (previousCity == "different city" && city == "Nabeul") {
+                    // City changed from Tunis to Nabeul
+                    print("City changed from Tunis to Nabeul");
+                    setFromSameCity = true;
+                    originalIndex = 1;
+                  } else if (previousCity == "different city" &&
+                      city == "Tunis") {
+                    // City changed from Nabeul to Tunis
+                    setFromSameCity = false;
+                    originalIndex = 1;
+                    print("City changed from Nabeul to Tunis");
+                  }
+
+                  // Update the previousCity
+                  previousCity = city;
+                }
+
+                /*     if ((city == 'Nabeul' &&
+                        widget.originalCity == "Nabeul Governorate") ||
+                    (city == 'Tunis' &&
+                        widget.originalCity == "Tunis Governorate")) {
                   print("hani hne ");
                   setFromSameCity = true;
                   originalIndex = 1;
                 } else
                   setFromSameCity = false;
-                originalIndex = 1;
+                originalIndex = 1; */
               }),
               widget.sendValueToParent(city),
-           /*    widget.initialPositionFromlist != null
+              /*    widget.initialPositionFromlist != null
                   ? mapController?.animateCamera(CameraUpdate.newLatLng(
                       LatLng(widget.initialPositionFromlist!.latitude,
                           widget.initialPositionFromlist!.longitude),
