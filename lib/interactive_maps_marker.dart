@@ -46,6 +46,7 @@ class InteractiveMapsMarker extends StatefulWidget {
   final List<int?> remainingKeys;
   InteractiveMapsMarker(
       {required this.items,
+        Key? key,
       this.itemBuilder,
       required this.onValueReceived,
       this.restItemBuilder,
@@ -63,7 +64,7 @@ class InteractiveMapsMarker extends StatefulWidget {
       required this.remainingKeys,
       this.initialPositionFromlist,
       this.filteredCity,
-      this.originalCity}) {
+      this.originalCity}): super(key: key) {
     if (itemBuilder == null && itemContent == null) {
       throw Exception('itemBuilder or itemContent must be provided');
     }
@@ -352,10 +353,18 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
                     widget.originalCity == "Nabeul Governorate") {
                   print("hani hne ");
                   setFromSameCity = true;
+                  originalIndex = 1;
                 } else
                   setFromSameCity = false;
+                originalIndex = 1;
               }),
               widget.sendValueToParent(city),
+           /*    widget.initialPositionFromlist != null
+                  ? mapController?.animateCamera(CameraUpdate.newLatLng(
+                      LatLng(widget.initialPositionFromlist!.latitude,
+                          widget.initialPositionFromlist!.longitude),
+                    ))
+                  : "", */
               _updateMarkers(position.zoom),
             },
           );
