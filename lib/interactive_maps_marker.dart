@@ -37,6 +37,7 @@ class InteractiveMapsMarker extends StatefulWidget {
   final Alignment contentAlignment;
   final LatLng? initialPositionFromlist;
   final String? filteredCity;
+  final String? originalCity;
   final Function(dynamic) onValueReceived;
 
   InteractiveMapsController? controller;
@@ -61,7 +62,8 @@ class InteractiveMapsMarker extends StatefulWidget {
       required this.keys,
       required this.remainingKeys,
       this.initialPositionFromlist,
-      this.filteredCity}) {
+      this.filteredCity,
+      this.originalCity}) {
     if (itemBuilder == null && itemContent == null) {
       throw Exception('itemBuilder or itemContent must be provided');
     }
@@ -121,6 +123,9 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   bool markerTapped = false;
   bool showDetailsNabeul = false;
   bool showDetailsTunis = false;
+  bool isNabeul = false;
+  bool isTunis = false;
+  String city = "";
 
   /// Url image used on normal markers
   /// Url image used on normal markers
@@ -145,10 +150,10 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
     mp.LatLng(36.34, 10.56),
   ];
   List<mp.LatLng> polygonPointsTunis = [
-    mp.LatLng(36.93, 10.04),
-    mp.LatLng(37.00, 10.32),
-    mp.LatLng(36.64, 10.15),
-    mp.LatLng(36.72, 10.43),
+    mp.LatLng(36.91, 9.95),
+    mp.LatLng(37.00, 10.25),
+    mp.LatLng(36.84, 10.47),
+    mp.LatLng(36.62, 10.18),
   ];
 
   late List<LatLng> newMarkerPostions = [];
@@ -337,19 +342,20 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
               zoom: widget.zoom,
             ),
             onCameraMove: (position) => {
+              isNabeul = isInPolygon(position.target, polygonPoints),
+              isTunis = isInPolygon(position.target, polygonPointsTunis),
+              city = isNabeul ? "Nabeul" : (isTunis ? "Tunis" : ""),
               setState(() {
-                showDetailsNabeul = isInPolygon(position.target, polygonPoints);
-                showDetailsTunis =
-                    isInPolygon(position.target, polygonPointsTunis);
-                if (showDetailsNabeul) {
-                  widget.sendValueToParent("Nabeul");
-                } else if (showDetailsTunis) {
-                  widget.sendValueToParent("Tunis");
-                } else {
-                  widget.sendValueToParent("");
-                }
+                showDetailsNabeul = isNabeul;
+                showDetailsTunis = isTunis;
+                if (city == 'Nabeul' &&
+                    widget.originalCity == "Nabeul Governorate") {
+                  print("hani hne ");
+                  setFromSameCity = true;
+                } else
+                  setFromSameCity = false;
               }),
-              print(showDetailsTunis),
+              widget.sendValueToParent(city),
               _updateMarkers(position.zoom),
             },
           );
