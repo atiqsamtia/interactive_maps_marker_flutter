@@ -354,28 +354,67 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
 
                 showDetailsNabeul = isNabeul;
                 showDetailsTunis = isTunis;
-                if (widget.filteredCity == "Tunis Governorate" && isTunis) {
+                if (widget.originalCity == "Nabeul Governorate") {
+                  if (widget.filteredCity == "Tunis Governorate" &&
+                      isTunis /*  widget.originalCity != "Tunis Governorate" */) {
+                    print("here");
+                    setFromSameCity = false;
+                    originalIndex = 1;
+                  }
+                } else if (widget.originalCity == "Tunis Governorate") {
+                  if (widget.filteredCity == "Nabeul Governorate" &&
+                      isNabeul /*  widget.originalCity != "Tunis Governorate" */) {
+                    print("here");
+                    setFromSameCity = false;
+                    originalIndex = 1;
+                  }
+                }
+                /*   if (widget.filteredCity == "Nabeul Governorate" &&
+                    isTunis &&
+                    widget.originalCity != "Nabeul Governorate") {
                   print("here");
                   setFromSameCity = false;
                   originalIndex = 1;
-                }
-                if (city != previousCity) {
-                  if (previousCity == "different city") {
-                    if (city == "Nabeul") {
-                      // City changed from Tunis to Nabeul
-                      setFromSameCity = true;
-                      originalIndex = 1;
-                      print("City changed from Tunis to Nabeul");
-                    } else if (city == "Tunis") {
-                      // City changed from Nabeul to Tunis
-                      setFromSameCity = false;
-                      originalIndex = 1;
-                      print("City changed from Nabeul to Tunis");
+                } */
+                if (widget.originalCity == "Tunis Governorate") {
+                  if (city != previousCity) {
+                    if (previousCity == "different city") {
+                      if (city == "Nabeul") {
+                        // City changed from Tunis to Nabeul
+                        setFromSameCity = false;
+                        originalIndex = 1;
+                        print("City changed from Tunis to Nabeul");
+                      } else if (city == "Tunis") {
+                        // City changed from Nabeul to Tunis
+                        setFromSameCity = true;
+                        originalIndex = 1;
+                        print("City changed from Nabeul to Tunis");
+                      }
                     }
-                  }
 
-                  // Update the previousCity
-                  previousCity = city;
+                    // Update the previousCity
+                    previousCity = city;
+                  }
+                }
+                if (widget.originalCity == "Nabeul Governorate") {
+                  if (city != previousCity) {
+                    if (previousCity == "different city") {
+                      if (city == "Nabeul") {
+                        // City changed from Tunis to Nabeul
+                        setFromSameCity = true;
+                        originalIndex = 1;
+                        print("City changed from Tunis to Nabeul");
+                      } else if (city == "Tunis") {
+                        // City changed from Nabeul to Tunis
+                        setFromSameCity = false;
+                        originalIndex = 1;
+                        print("City changed from Nabeul to Tunis");
+                      }
+                    }
+
+                    // Update the previousCity
+                    previousCity = city;
+                  }
                 }
               }),
               widget.sendValueToParent(city),
