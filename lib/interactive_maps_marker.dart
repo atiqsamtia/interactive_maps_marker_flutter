@@ -354,18 +354,24 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
 
                 showDetailsNabeul = isNabeul;
                 showDetailsTunis = isTunis;
+                if (widget.filteredCity == "Tunis Governorate" && isTunis) {
+                  print("here");
+                  setFromSameCity = false;
+                  originalIndex = 1;
+                }
                 if (city != previousCity) {
-                  if (previousCity == "different city" && city == "Nabeul") {
-                    // City changed from Tunis to Nabeul
-                    print("City changed from Tunis to Nabeul");
-                    setFromSameCity = true;
-                    originalIndex = 1;
-                  } else if (previousCity == "different city" &&
-                      city == "Tunis") {
-                    // City changed from Nabeul to Tunis
-                    setFromSameCity = false;
-                    originalIndex = 1;
-                    print("City changed from Nabeul to Tunis");
+                  if (previousCity == "different city") {
+                    if (city == "Nabeul") {
+                      // City changed from Tunis to Nabeul
+                      setFromSameCity = true;
+                      originalIndex = 1;
+                      print("City changed from Tunis to Nabeul");
+                    } else if (city == "Tunis") {
+                      // City changed from Nabeul to Tunis
+                      setFromSameCity = false;
+                      originalIndex = 1;
+                      print("City changed from Nabeul to Tunis");
+                    }
                   }
 
                   // Update the previousCity
