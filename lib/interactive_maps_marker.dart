@@ -210,11 +210,13 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
               setFromSameCity = false;
             }
             if (_currentZoom > 10) {
-              pageController.animateToPage(
-                originalIndex!,
-                duration: Duration(milliseconds: 500),
-                curve: Curves.bounceInOut,
-              );
+              Future.delayed(Duration(milliseconds: 500), () {
+                pageController.animateToPage(
+                  originalIndex!,
+                  duration: Duration(milliseconds: 500),
+                  curve: Curves.bounceInOut,
+                );
+              });
             }
             _pageChanged(tappedIndex!);
           },
@@ -434,13 +436,15 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
       }
       Marker marker = markers.elementAt(index).toMarker();
       if (_currentZoom <= 10) {
-        Future.delayed(Duration(milliseconds: 500), () {
-          pageController.animateToPage(
-            index,
-            duration: Duration(milliseconds: 500),
-            curve: Curves.bounceInOut,
-          );
-        });
+        if (pageController.hasClients) {
+          Future.delayed(Duration(milliseconds: 500), () {
+            pageController.animateToPage(
+              index,
+              duration: Duration(milliseconds: 500),
+              curve: Curves.bounceInOut,
+            );
+          });
+        }
       }
       mapController
           ?.animateCamera(
