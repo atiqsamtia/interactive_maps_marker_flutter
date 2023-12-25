@@ -108,7 +108,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   final int _minClusterZoom = 0;
 
   /// Maximum zoom at which the markers will cluster
-  final int _maxClusterZoom = 19;
+  final int _maxClusterZoom = 10;
 
   /// [Fluster] instance used to manage the clusters
   Fluster<MapMarker>? _clusterManager;
