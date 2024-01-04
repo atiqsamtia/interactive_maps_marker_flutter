@@ -211,10 +211,10 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
             }
             if (_currentZoom > 10) {
               Future.delayed(Duration(milliseconds: 500), () {
-                pageController.animateToPage(
+                pageController.jumpToPage(
                   originalIndex!,
-                  duration: Duration(milliseconds: 500),
-                  curve: Curves.bounceInOut,
+                  /*  duration: Duration(milliseconds: 0),
+                  curve: Curves.bounceInOut, */
                 );
               });
             }
