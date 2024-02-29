@@ -126,7 +126,7 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
             )
           ],
         );
-      },
+      }, stream: null,
     );
   }
 
