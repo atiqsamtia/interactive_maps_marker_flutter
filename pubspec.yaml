@@ -11,6 +11,9 @@ dependencies:
   flutter:
     sdk: flutter
   google_maps_flutter: ^2.2.5
+  flutter_cache_manager: ^3.0.2
+  fluster: any
+  maps_toolkit: ^3.0.0
 
 dev_dependencies:
   flutter_test:
@@ -19,3 +22,5 @@ dev_dependencies:
 flutter:
   assets:
     - assets/
+    - assets/marker.png
+    - assets/marker_darkmode.png

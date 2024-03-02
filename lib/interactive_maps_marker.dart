@@ -2,21 +2,22 @@ library interactive_maps_marker; // interactive_marker_list
 
 import 'dart:async';
 
+import 'package:fluster/fluster.dart';
 import "package:flutter/material.dart";
-import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:interactive_maps_marker/interactive_maps_controller.dart';
 export 'package:interactive_maps_marker/interactive_maps_controller.dart';
 
-import './utils.dart';
+import 'helpers/map_helper.dart';
+import 'helpers/map_marker.dart';
+import 'package:maps_toolkit/maps_toolkit.dart' as mp;
 
 class MarkerItem {
   int id;
-  double latitude;
-  double longitude;
-
-  MarkerItem({required this.id, required this.latitude, required this.longitude});
+  LatLng location;
+  String ville;
+  MarkerItem({required this.id, required this.location, required this.ville});
 }
 
 class InteractiveMapsMarker extends StatefulWidget {
@@ -31,44 +32,57 @@ class InteractiveMapsMarker extends StatefulWidget {
   final IndexedWidgetBuilder? itemContent;
 
   final IndexedWidgetBuilder? itemBuilder;
+  final IndexedWidgetBuilder? restItemBuilder;
   final EdgeInsetsGeometry itemPadding;
   final Alignment contentAlignment;
+  final LatLng? initialPositionFromlist;
+  final String? filteredCity;
+  final String? originalCity;
+  final Function(dynamic) onValueReceived;
 
   InteractiveMapsController? controller;
   VoidCallback? onLastItem;
-
-  InteractiveMapsMarker({
-    required this.items,
-    this.itemBuilder,
-    this.center = const LatLng(0.0, 0.0),
-    this.itemContent,
-    this.itemHeight = 116,
-    this.zoom = 12.0,
-    this.zoomFocus = 15.0,
-    this.zoomKeepOnTap = false,
-    this.itemPadding = const EdgeInsets.only(bottom: 80.0),
-    this.contentAlignment = Alignment.bottomCenter,
-    this.controller,
-    this.onLastItem,
-  }){
-    if(itemBuilder == null && itemContent == null){
+  final List<int?> keys;
+  final List<int?> remainingKeys;
+  InteractiveMapsMarker(
+      {required this.items,
+      Key? key,
+      this.itemBuilder,
+      required this.onValueReceived,
+      this.restItemBuilder,
+      this.center = const LatLng(0.0, 0.0),
+      this.itemContent,
+      this.itemHeight = 116,
+      this.zoom = 12.0,
+      this.zoomFocus = 15.0,
+      this.zoomKeepOnTap = false,
+      this.itemPadding = const EdgeInsets.only(bottom: 80.0),
+      this.contentAlignment = Alignment.bottomCenter,
+      this.controller,
+      this.onLastItem,
+      required this.keys,
+      required this.remainingKeys,
+      this.initialPositionFromlist,
+      this.filteredCity,
+      this.originalCity})
+      : super(key: key) {
+    if (itemBuilder == null && itemContent == null) {
       throw Exception('itemBuilder or itemContent must be provided');
     }
-    readIcons();
   }
-
-  void readIcons() async {
-    if (markerIcon == null) markerIcon = await getBytesFromAsset('packages/interactive_maps_marker/assets/marker.png', 100);
-    if (markerIconSelected == null) markerIconSelected = await getBytesFromAsset('packages/interactive_maps_marker/assets/marker_selected.png', 100);
+  void sendValueToParent(dynamic data) {
+    onValueReceived(data);
   }
 
   Uint8List? markerIcon;
   Uint8List? markerIconSelected;
+  Uint8List? markerIconDark;
+  Uint8List? markerIconSelectedDark;
 
   @override
   InteractiveMapsMarkerState createState() {
     var state = InteractiveMapsMarkerState();
-    if(controller != null){
+    if (controller != null) {
       controller!.currentState(state);
     }
     return state;
@@ -79,31 +93,188 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   Completer<GoogleMapController> _controller = Completer();
   GoogleMapController? mapController;
   PageController pageController = PageController(viewportFraction: 0.9);
+  LatLng? _initialPosition;
 
-  Set<Marker> markers = {};
+  List<Marker> googleMarkers = [];
+/*   Set<Marker> markers = {};
+ */
   int currentIndex = 0;
   ValueNotifier selectedMarker = ValueNotifier<int?>(0);
 
+  /// Set of displayed markers and cluster markers on the map
+  final Set<Marker> _markers = Set();
+
+  /// Minimum zoom at which the markers will cluster
+  final int _minClusterZoom = 0;
+
+  /// Maximum zoom at which the markers will cluster
+  final int _maxClusterZoom = 10;
+
+  /// [Fluster] instance used to manage the clusters
+  Fluster<MapMarker>? _clusterManager;
+
+  /// Current map zoom. Initial zoom will be 15, street level
+  double _currentZoom = 15;
+
+  /// Map loading flag
+  bool _isMapLoading = true;
+
+  /// Markers loading flag
+  bool _areMarkersLoading = true;
+  bool setFromSameCity = false;
+  bool markerTapped = false;
+  bool showDetailsNabeul = false;
+  bool showDetailsTunis = false;
+  bool isNabeul = false;
+  bool isTunis = false;
+  String city = "";
+  String previousCity = "";
+
+  /// Url image used on normal markers
+  /// Url image used on normal markers
+  final String _markerImageUrl =
+      'packages/interactive_maps_marker/assets/marker.png';
+
+  final String _markerImageDarkUrl =
+      'packages/interactive_maps_marker/assets/marker_darkmode.png';
+
+  /// Color of the cluster circle
+  final Color _clusterColor = Color(0xFFff5f5f);
+
+  /// Color of the cluster text
+  final Color _clusterTextColor = Colors.white;
+  final List<MapMarker> markers = [];
+  Map<int, int> indexMapping = {};
+  Map<int, int> indexMappingRemaining = {};
+  List<mp.LatLng> polygonPoints = [
+    mp.LatLng(36.53, 10.33),
+    mp.LatLng(36.92, 10.96),
+    mp.LatLng(36.66, 11.32),
+    mp.LatLng(36.34, 10.56),
+  ];
+  List<mp.LatLng> polygonPointsTunis = [
+    mp.LatLng(36.91, 9.95),
+    mp.LatLng(37.00, 10.25),
+    mp.LatLng(36.84, 10.47),
+    mp.LatLng(36.62, 10.18),
+  ];
+
+  late List<LatLng> newMarkerPostions = [];
+  late int? originalIndex = null;
   @override
   void initState() {
-    rebuildMarkers(currentIndex);
+    newMarkerPostions = widget.items.map((e) => e.location).toList();
+    indexMapping = Map.fromIterable(widget.keys,
+        key: (item) => widget.keys.indexOf(item), value: (item) => item);
+    indexMappingRemaining = Map.fromIterable(widget.remainingKeys,
+        key: (item) => widget.remainingKeys.indexOf(item),
+        value: (item) => item);
     super.initState();
   }
 
   @override
   void didChangeDependencies() {
-    rebuildMarkers(currentIndex);
     super.didChangeDependencies();
   }
 
-  void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
-    _controller.complete(controller);
+  int? getKeyForValue(Map<int, int> map, int targetValue) {
+    for (var entry in map.entries) {
+      if (entry.value == targetValue) {
+        return entry.key;
+      }
+    }
+    return null; // Return null if the value is not found.
+  }
+
+  /// Inits [Fluster] and all the markers with network images and updates the loading state.
+  void _initMarkers() async {
+    for (LatLng markerLocation in newMarkerPostions) {
+      final BitmapDescriptor markerImage =
+          await MapHelper.getMarkerImageFromAsset(
+              Theme.of(context).brightness == Brightness.dark
+                  ? _markerImageDarkUrl
+                  : _markerImageUrl,
+              targetWidth: 80);
+      markers.add(
+        MapMarker(
+          onTap: () {
+            int tappedIndex = newMarkerPostions.indexOf(markerLocation);
+            originalIndex = getKeyForValue(indexMapping, tappedIndex);
+            setFromSameCity = true;
+            setState(() {
+              markerTapped = true;
+            });
+            if (getKeyForValue(indexMapping, tappedIndex) == null) {
+              originalIndex =
+                  getKeyForValue(indexMappingRemaining, tappedIndex);
+              setFromSameCity = false;
+            }
+            if (_currentZoom > 10) {
+              pageController.jumpToPage(
+                originalIndex!,
+                /*  duration: Duration(milliseconds: 0),
+                  curve: Curves.bounceInOut, */
+              );
+            }
+            _pageChanged(tappedIndex!);
+          },
+          id: newMarkerPostions.indexOf(markerLocation).toString(),
+          position: markerLocation,
+          icon: markerImage,
+        ),
+      );
+    }
+
+    _clusterManager = (await MapHelper.initClusterManager(
+      markers,
+      _minClusterZoom,
+      _maxClusterZoom,
+    )) as Fluster<MapMarker>?;
+
+    await _updateMarkers();
+  }
+
+  Future<void> _updateMarkers([double? updatedZoom]) async {
+    if (_clusterManager == null || updatedZoom == _currentZoom) return;
+    if (_currentZoom <= 10) {
+      markerTapped = false;
+    } else
+      markerTapped = true;
+
+    if (updatedZoom != null) {
+      _currentZoom = updatedZoom;
+    }
+
+    setState(() {
+      _areMarkersLoading = true;
+    });
+
+    final updatedMarkers = await MapHelper.getClusterMarkers(
+      _clusterManager,
+      _currentZoom,
+      _clusterColor,
+      _clusterTextColor,
+      80,
+    );
+    _markers
+      ..clear()
+      ..addAll(updatedMarkers);
+
+    setState(() {
+      _areMarkersLoading = false;
+    });
+  }
+
+  bool isInPolygon(LatLng point, List<mp.LatLng> polygonPoints) {
+    final pointMp = mp.LatLng(point.latitude, point.longitude);
+
+    return mp.PolygonUtil.containsLocation(pointMp, polygonPoints, false);
   }
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<int>(
+    return StreamBuilder<int?>(
+      stream: null,
       initialData: 0,
       builder: (context, snapshot) {
         return Stack(
@@ -115,12 +286,25 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
                 padding: widget.itemPadding,
                 child: SizedBox(
                   height: widget.itemHeight,
-                  child: PageView.builder(
-                    itemCount: widget.items.length,
-                    controller: pageController,
-                    onPageChanged: _pageChanged,
-                    itemBuilder: widget.itemBuilder != null ? widget.itemBuilder! : _buildItem,
-                  ),
+                  child: markerTapped && (showDetailsNabeul || showDetailsTunis)
+                      ? PageView.builder(
+                          itemCount: originalIndex != null && !setFromSameCity
+                              ? indexMappingRemaining.length
+                              : indexMapping.length,
+                          controller: pageController,
+                          onPageChanged: (int pageIndex) {
+                            final NeworiginalIndex =
+                                originalIndex != null && !setFromSameCity
+                                    ? indexMappingRemaining[pageIndex]
+                                    : indexMapping[pageIndex];
+                            if (NeworiginalIndex != null) {
+                              _pageChanged(NeworiginalIndex);
+                            }
+                          },
+                          itemBuilder: originalIndex != null && !setFromSameCity
+                              ? widget.restItemBuilder!
+                              : widget.itemBuilder!)
+                      : SizedBox.shrink(),
                 ),
               ),
             )
@@ -135,42 +319,109 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
       child: ValueListenableBuilder(
         valueListenable: selectedMarker,
         builder: (context, value, child) {
-          print('Values changed');
           return GoogleMap(
             zoomControlsEnabled: false,
-            markers: markers,
+            markers: _markers,
             myLocationEnabled: true,
-            myLocationButtonEnabled: false,
-            onMapCreated: _onMapCreated,
+            myLocationButtonEnabled: true,
+            padding: EdgeInsets.only(
+              top: 40.0,
+            ),
+            onMapCreated: (GoogleMapController controller) async {
+              mapController = controller;
+              await mapController?.setMapStyle(
+                await DefaultAssetBundle.of(context).loadString(
+                  Theme.of(context).brightness != Brightness.dark
+                      ? "assets/json/mapstyle_light.json"
+                      : "assets/json/mapstyle_dark.json",
+                ),
+              );
+              _initMarkers();
+            },
             initialCameraPosition: CameraPosition(
-              target: widget.center,
+              target: widget.initialPositionFromlist != null
+                  ? widget.initialPositionFromlist as LatLng
+                  : widget.initialPositionFromlist as LatLng,
               zoom: widget.zoom,
             ),
+            onCameraMove: (position) => {
+              setState(() {
+                isNabeul = isInPolygon(position.target, polygonPoints);
+                isTunis = isInPolygon(position.target, polygonPointsTunis);
+                city = isNabeul
+                    ? "Nabeul"
+                    : (isTunis ? "Tunis" : "different city");
+
+                showDetailsNabeul = isNabeul;
+                showDetailsTunis = isTunis;
+                if (widget.originalCity == "Nabeul Governorate") {
+                  if (widget.filteredCity == "Tunis Governorate" &&
+                      isTunis /*  widget.originalCity != "Tunis Governorate" */) {
+                    print("here");
+                    setFromSameCity = false;
+                    originalIndex = 1;
+                  }
+                } else if (widget.originalCity == "Tunis Governorate") {
+                  if (widget.filteredCity == "Nabeul Governorate" &&
+                      isNabeul /*  widget.originalCity != "Tunis Governorate" */) {
+                    print("here");
+                    setFromSameCity = false;
+                    originalIndex = 1;
+                  }
+                }
+                /*   if (widget.filteredCity == "Nabeul Governorate" &&
+                    isTunis &&
+                    widget.originalCity != "Nabeul Governorate") {
+                  print("here");
+                  setFromSameCity = false;
+                  originalIndex = 1;
+                } */
+                if (widget.originalCity == "Tunis Governorate") {
+                  if (city != previousCity) {
+                    if (previousCity == "different city") {
+                      if (city == "Nabeul") {
+                        // City changed from Tunis to Nabeul
+                        setFromSameCity = false;
+                        originalIndex = 1;
+                        print("City changed from Tunis to Nabeul");
+                      } else if (city == "Tunis") {
+                        // City changed from Nabeul to Tunis
+                        setFromSameCity = true;
+                        originalIndex = 1;
+                        print("City changed from Nabeul to Tunis");
+                      }
+                    }
+
+                    // Update the previousCity
+                    previousCity = city;
+                  }
+                }
+                if (widget.originalCity == "Nabeul Governorate") {
+                  if (city != previousCity) {
+                    if (previousCity == "different city") {
+                      if (city == "Nabeul") {
+                        // City changed from Tunis to Nabeul
+                        setFromSameCity = true;
+                        originalIndex = 1;
+                        print("City changed from Tunis to Nabeul");
+                      } else if (city == "Tunis") {
+                        // City changed from Nabeul to Tunis
+                        setFromSameCity = false;
+                        originalIndex = 1;
+                        print("City changed from Nabeul to Tunis");
+                      }
+                    }
+
+                    // Update the previousCity
+                    previousCity = city;
+                  }
+                }
+              }),
+              widget.sendValueToParent(city),
+              _updateMarkers(position.zoom),
+            },
           );
         },
-      ),
-    );
-  }
-
-  Widget? _buildItem(BuildContext context, int i) {
-    return Transform.scale(
-      scale: i == currentIndex ? 1 : 0.9,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(10.0),
-        child: Container(
-          height: widget.itemHeight,
-          decoration: BoxDecoration(
-            color: Color(0xffffffff),
-            boxShadow: [
-              BoxShadow(
-                offset: Offset(0.5, 0.5),
-                color: Color(0xff000000).withOpacity(0.12),
-                blurRadius: 20,
-              ),
-            ],
-          ),
-          child: widget.itemContent!(context, i),
-        ),
       ),
     );
   }
@@ -178,12 +429,19 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   void _pageChanged(int index) {
     try {
       setState(() => currentIndex = index);
-      if(widget.onLastItem != null && index == widget.items.length - 1){
+      if (widget.onLastItem != null && index == widget.items.length - 1) {
         widget.onLastItem!();
       }
-      rebuildMarkers(index);
-      Marker marker = markers.elementAt(index);
-
+      Marker marker = markers.elementAt(index).toMarker();
+      if (_currentZoom <= 10) {
+        Future.delayed(Duration(milliseconds: 500), () {
+          pageController.animateToPage(
+            index,
+            duration: Duration(milliseconds: 500),
+            curve: Curves.bounceInOut,
+          );
+        });
+      }
       mapController
           ?.animateCamera(
         widget.zoomKeepOnTap
@@ -200,48 +458,5 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
     } catch (e) {
       print(e);
     }
-  }
-
-  Future<void> rebuildMarkers(int index) async {
-    if(widget.items.length == 0) return;
-    int current = widget.items[index].id;
-
-    Set<Marker> _markers = Set<Marker>();
-
-    widget.items.forEach((item) {
-      _markers.add(
-        Marker(
-          markerId: MarkerId(item.id.toString()),
-          position: LatLng(item.latitude, item.longitude),
-          onTap: () {
-            int tappedIndex = widget.items.indexWhere((element) => element.id == item.id);
-            pageController.animateToPage(
-              tappedIndex,
-              duration: Duration(milliseconds: 300),
-              curve: Curves.bounceInOut,
-            );
-            _pageChanged(tappedIndex);
-          },
-          icon:  BitmapDescriptor.defaultMarkerWithHue(item.id == current ? BitmapDescriptor.hueGreen : BitmapDescriptor.hueRed),
-          // icon: item.id == current ? BitmapDescriptor.fromBytes(widget.markerIconSelected!) : BitmapDescriptor.fromBytes(widget.markerIcon!),
-        ),
-      );
-    });
-
-    setState(() {
-      markers = _markers;
-    });
-    // selectedMarker.value = current;
-    selectedMarker.value = current;
-    // selectedMarker.notifyListeners();
-  }
-
-  void setIndex(int index){
-    pageController.animateToPage(
-      index,
-      duration: Duration(milliseconds: 300),
-      curve: Curves.bounceInOut,
-    );
-    _pageChanged(index);
   }
 }
