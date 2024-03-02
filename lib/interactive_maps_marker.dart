@@ -1,6 +1,7 @@
 library interactive_maps_marker; // interactive_marker_list
 
 import 'dart:async';
+import 'dart:ui';
 
 import "package:flutter/material.dart";
 import 'package:flutter/widgets.dart';
@@ -16,7 +17,8 @@ class MarkerItem {
   double latitude;
   double longitude;
 
-  MarkerItem({required this.id, required this.latitude, required this.longitude});
+  MarkerItem(
+      {required this.id, required this.latitude, required this.longitude});
 }
 
 class InteractiveMapsMarker extends StatefulWidget {
@@ -25,6 +27,8 @@ class InteractiveMapsMarker extends StatefulWidget {
   final double zoom;
   final double zoomFocus;
   final bool zoomKeepOnTap;
+  void Function(CameraPosition)? onCameraMove;
+  void Function()? onCameraIdle;
   @required
   List<MarkerItem> items;
   @required
@@ -50,16 +54,22 @@ class InteractiveMapsMarker extends StatefulWidget {
     this.contentAlignment = Alignment.bottomCenter,
     this.controller,
     this.onLastItem,
-  }){
-    if(itemBuilder == null && itemContent == null){
+    this.onCameraMove,
+    this.onCameraIdle,
+  }) {
+    if (itemBuilder == null && itemContent == null) {
       throw Exception('itemBuilder or itemContent must be provided');
     }
     readIcons();
   }
 
   void readIcons() async {
-    if (markerIcon == null) markerIcon = await getBytesFromAsset('packages/interactive_maps_marker/assets/marker.png', 100);
-    if (markerIconSelected == null) markerIconSelected = await getBytesFromAsset('packages/interactive_maps_marker/assets/marker_selected.png', 100);
+    if (markerIcon == null)
+      markerIcon = await getBytesFromAsset(
+          'packages/interactive_maps_marker/assets/marker.png', 100);
+    if (markerIconSelected == null)
+      markerIconSelected = await getBytesFromAsset(
+          'packages/interactive_maps_marker/assets/marker_selected.png', 100);
   }
 
   Uint8List? markerIcon;
@@ -68,7 +78,7 @@ class InteractiveMapsMarker extends StatefulWidget {
   @override
   InteractiveMapsMarkerState createState() {
     var state = InteractiveMapsMarkerState();
-    if(controller != null){
+    if (controller != null) {
       controller!.currentState(state);
     }
     return state;
@@ -83,7 +93,6 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   Set<Marker> markers = {};
   int currentIndex = 0;
   ValueNotifier selectedMarker = ValueNotifier<int?>(0);
-
   @override
   void initState() {
     rebuildMarkers(currentIndex);
@@ -119,7 +128,9 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
                     itemCount: widget.items.length,
                     controller: pageController,
                     onPageChanged: _pageChanged,
-                    itemBuilder: widget.itemBuilder != null ? widget.itemBuilder! : _buildItem,
+                    itemBuilder: widget.itemBuilder != null
+                        ? widget.itemBuilder!
+                        : _buildItem,
                   ),
                 ),
               ),
@@ -142,6 +153,8 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
             myLocationEnabled: true,
             myLocationButtonEnabled: false,
             onMapCreated: _onMapCreated,
+            onCameraMove: widget.onCameraMove,
+            onCameraIdle: widget.onCameraIdle,
             initialCameraPosition: CameraPosition(
               target: widget.center,
               zoom: widget.zoom,
@@ -178,65 +191,95 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
   void _pageChanged(int index) {
     try {
       setState(() => currentIndex = index);
-      if(widget.onLastItem != null && index == widget.items.length - 1){
+      if (widget.onLastItem != null && index == widget.items.length - 1) {
         widget.onLastItem!();
       }
-      rebuildMarkers(index);
-      Marker marker = markers.elementAt(index);
 
-      mapController
-          ?.animateCamera(
-        widget.zoomKeepOnTap
-            ? CameraUpdate.newLatLng(
-                LatLng(marker.position.latitude, marker.position.longitude),
-              )
-            : CameraUpdate.newCameraPosition(
-                CameraPosition(target: marker.position, zoom: widget.zoomFocus),
-              ),
-      )
-          .then((val) {
-        setState(() {});
-      });
+      if (markers.isNotEmpty) {
+        Marker marker = markers.elementAt(index);
+
+        mapController
+            ?.animateCamera(
+          widget.zoomKeepOnTap
+              ? CameraUpdate.newLatLng(
+            LatLng(marker.position.latitude, marker.position.longitude),
+          )
+              : CameraUpdate.newCameraPosition(
+            CameraPosition(target: marker.position, zoom: widget.zoomFocus),
+          ),
+        )
+            .then((val) {
+          setState(() {});
+        });
+      }
+
+      rebuildMarkers(index);
     } catch (e) {
       print(e);
     }
   }
 
+
+
   Future<void> rebuildMarkers(int index) async {
-    if(widget.items.length == 0) return;
-    int current = widget.items[index].id;
+    if (widget.items.isEmpty) return;
 
-    Set<Marker> _markers = Set<Marker>();
+    Set<Marker> _markers = {};
 
-    widget.items.forEach((item) {
-      _markers.add(
-        Marker(
-          markerId: MarkerId(item.id.toString()),
-          position: LatLng(item.latitude, item.longitude),
-          onTap: () {
-            int tappedIndex = widget.items.indexWhere((element) => element.id == item.id);
-            pageController.animateToPage(
-              tappedIndex,
-              duration: Duration(milliseconds: 300),
-              curve: Curves.bounceInOut,
-            );
-            _pageChanged(tappedIndex);
-          },
-          icon:  BitmapDescriptor.defaultMarkerWithHue(item.id == current ? BitmapDescriptor.hueGreen : BitmapDescriptor.hueRed),
-          // icon: item.id == current ? BitmapDescriptor.fromBytes(widget.markerIconSelected!) : BitmapDescriptor.fromBytes(widget.markerIcon!),
-        ),
-      );
-    });
+    for (var item in widget.items) {
+      Uint8List customIcon = await _createCustomMarker(item.id.toString(), item.id == widget.items[index].id);
+
+      _markers.add(_createMarker(item, customIcon));
+    }
 
     setState(() {
       markers = _markers;
     });
-    // selectedMarker.value = current;
-    selectedMarker.value = current;
-    // selectedMarker.notifyListeners();
+    selectedMarker.value = widget.items[index].id;
   }
 
-  void setIndex(int index){
+  Marker _createMarker(MarkerItem item, Uint8List customIcon) {
+    return Marker(
+      markerId: MarkerId(item.id.toString()),
+      position: LatLng(item.latitude, item.longitude),
+      onTap: () {
+        int tappedIndex = widget.items.indexWhere((element) => element.id == item.id);
+        pageController.animateToPage(
+          tappedIndex,
+          duration: Duration(milliseconds: 300),
+          curve: Curves.bounceInOut,
+        );
+        _pageChanged(tappedIndex);
+      },
+      icon: BitmapDescriptor.fromBytes(customIcon),
+    );
+  }
+
+
+  Future<Uint8List> _createCustomMarker(String id, bool isSelected) async {
+    final recorder = PictureRecorder();
+    final canvas = Canvas(recorder);
+    final backgroundPaint = Paint()..color = isSelected ? Colors.green : Colors.red;
+    final textPaint = Paint()..color = Colors.white;
+    final textSpan = TextSpan(text: id, style: TextStyle(fontSize: 24, color: Colors.white));
+    final textPainter = TextPainter(text: textSpan, textDirection: TextDirection.ltr)..layout();
+
+    // Draw background circle
+    canvas.drawCircle(Offset(30, 30), 30, backgroundPaint);
+
+    // Draw text
+    textPainter.paint(canvas, Offset(20, 20)); // Customize the text position
+
+    final picture = recorder.endRecording();
+    final image = await picture.toImage(60, 60); // Customize the image size
+    final ByteData? byteData = await image.toByteData(format: ImageByteFormat.png);
+    if (byteData == null) {
+      throw Exception('Failed to convert image to byte data');
+    }
+    return byteData.buffer.asUint8List();
+  }
+
+  void setIndex(int index) {
     pageController.animateToPage(
       index,
       duration: Duration(milliseconds: 300),
