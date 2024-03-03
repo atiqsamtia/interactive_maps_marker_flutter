@@ -252,26 +252,45 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
         _pageChanged(tappedIndex);
       },
       icon: BitmapDescriptor.fromBytes(customIcon),
+      // icon:  BitmapDescriptor.defaultMarkerWithHue(item.id == current ? BitmapDescriptor.hueGreen : BitmapDescriptor.hueRed),
+
     );
   }
 
 
   Future<Uint8List> _createCustomMarker(String id, bool isSelected) async {
+
+    final double radius = 40;
+    final double fontSize = 50;
     final recorder = PictureRecorder();
     final canvas = Canvas(recorder);
     final backgroundPaint = Paint()..color = isSelected ? Colors.green : Colors.red;
-    final textPaint = Paint()..color = Colors.white;
-    final textSpan = TextSpan(text: id, style: TextStyle(fontSize: 24, color: Colors.white));
+    final textSpan = TextSpan(text: id, style: TextStyle(fontSize: fontSize, color: Colors.white));
     final textPainter = TextPainter(text: textSpan, textDirection: TextDirection.ltr)..layout();
 
+    final borderPaint = Paint()
+      ..color = Colors.white // Border color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.0; // Border width
+
+
     // Draw background circle
-    canvas.drawCircle(Offset(30, 30), 30, backgroundPaint);
+    canvas.drawCircle(Offset(radius, radius), radius, backgroundPaint);
+
+    canvas.drawCircle(Offset(radius, radius), radius, borderPaint);
+
+
+    // Calculate text position
+    final textWidth = textPainter.width;
+    final textHeight = textPainter.height;
+    final textX = radius - (textWidth / 2);
+    final textY = radius - (textHeight / 2);
 
     // Draw text
-    textPainter.paint(canvas, Offset(20, 20)); // Customize the text position
+    textPainter.paint(canvas, Offset(textX, textY));
 
     final picture = recorder.endRecording();
-    final image = await picture.toImage(60, 60); // Customize the image size
+    final image = await picture.toImage((radius*2).toInt(), (radius*2).toInt()); // Customize the image size
     final ByteData? byteData = await image.toByteData(format: ImageByteFormat.png);
     if (byteData == null) {
       throw Exception('Failed to convert image to byte data');
