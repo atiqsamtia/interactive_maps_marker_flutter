@@ -13,7 +13,7 @@ export 'package:interactive_maps_marker/interactive_maps_controller.dart';
 import './utils.dart';
 
 class MarkerItem {
-  int id;
+  String id;
   double latitude;
   double longitude;
 
@@ -279,6 +279,8 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
 
     canvas.drawCircle(Offset(radius, radius), radius, borderPaint);
 
+    //make a small triangle in the bottom of circle also
+
 
     // Calculate text position
     final textWidth = textPainter.width;
@@ -290,6 +292,8 @@ class InteractiveMapsMarkerState extends State<InteractiveMapsMarker> {
     textPainter.paint(canvas, Offset(textX, textY));
 
     final picture = recorder.endRecording();
+
+    //change image width so triangle keep withing the canvas
     final image = await picture.toImage((radius*2).toInt(), (radius*2).toInt()); // Customize the image size
     final ByteData? byteData = await image.toByteData(format: ImageByteFormat.png);
     if (byteData == null) {
